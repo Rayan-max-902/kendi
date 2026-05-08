@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Cherry+Bomb+One&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", sans-serif;
+  --font-special: "Cherry Bomb One", system-ui;
+  --color-primary: #ec1c24;
+  --color-primary-hover: #c9181f;
+  --animate-marquee: marquee 40s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes spin-ring {
+  from { transform: rotateX(-20deg) rotateZ(30deg) rotateY(0deg); }
+  to { transform: rotateX(-20deg) rotateZ(30deg) rotateY(360deg); }
+}
+
+@keyframes rotate-vortex {
+  from { transform: perspective(1000px) rotateX(20deg) rotateY(0deg); }
+  to { transform: perspective(1000px) rotateX(20deg) rotateY(360deg); }
+}
+
+.vortex-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  animation: rotate-vortex 40s linear infinite;
+}
+
+.vortex-photo {
+  position: absolute;
+  width: 15vw;
+  height: 20vh;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+
+@keyframes resonate {
+  0%, 100% { transform: scale(1); filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.1)); }
+  50% { transform: scale(1.1); filter: drop-shadow(0 0 60px rgba(236,28,36,0.6)); }
+}
+
+.title-3d {
+  font-family: var(--font-special);
+  color: #ec1c24;
+  paint-order: stroke fill;
+  filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.1));
+  display: inline-block;
+  animation: resonate 2s ease-in-out infinite;
+  backface-visibility: hidden;
+  text-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+@keyframes wave-move {
+  0% { transform: translateX(0) skewX(0deg); }
+  50% { transform: translateX(-5%) skewX(1deg); }
+  100% { transform: translateX(0) skewX(0deg); }
+}
+
+.animate-wave {
+  animation: wave-move 8s ease-in-out infinite;
+}
+
+.animate-wave-slow {
+  animation: wave-move 12s ease-in-out infinite;
+}
+
+.animate-wave-reverse {
+  animation: wave-move 10s ease-in-out infinite reverse;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-slate-900 antialiased overflow-x-hidden selection:bg-primary/20 selection:text-primary;
+    width: 100vw;
+    position: relative;
+    scrollbar-gutter: stable;
+  }
+  img {
+    @apply max-w-full h-auto;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+.text-shadow-sm {
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.text-shadow-lg {
+  text-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+/* Fix for horizontal scroll on mobile */
+* {
+  box-sizing: border-box;
+}
+
+input, select, textarea {
+  font-size: 16px !important; /* Prevents auto-zoom on iOS */
+}
+
+.glass {
+  @apply bg-white/70 backdrop-blur-md border border-white/20;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.text-stretch {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.text-stretch:hover {
+  transform: scaleY(1.4) scaleX(0.8);
+}

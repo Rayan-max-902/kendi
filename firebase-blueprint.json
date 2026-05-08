@@ -1,0 +1,95 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "teacher", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "announcement": {
+      "title": "Announcement",
+      "description": "Association news and events",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string", "enum": ["Événement", "Forum", "Compétition", "Nouveauté", "Admin", "Urgent"] },
+        "status": { "type": "string", "enum": ["En cours", "Terminé"] },
+        "imageUrl": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "author": { "type": "string" }
+      },
+      "required": ["title", "content", "category", "date"]
+    },
+    "course": {
+      "title": "Course",
+      "description": "Shared educational content",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "filiere": { "type": "string", "enum": ["IA", "CG"] },
+        "level": { "type": "string" },
+        "author": { "type": "string" },
+        "authorId": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "filiere", "authorId", "content"]
+    },
+    "testimonial": {
+      "title": "Testimonial",
+      "description": "User feedback and ratings",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "rating", "comment"]
+    },
+    "partner": {
+      "title": "Partner",
+      "description": "Association partners and sponsors",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "websiteUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "logoUrl"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "user",
+      "description": "User profiles"
+    },
+    "announcements/{announcementId}": {
+      "schema": "announcement",
+      "description": "List of announcements"
+    },
+    "courses/{courseId}": {
+      "schema": "course",
+      "description": "Community shared courses"
+    },
+    "testimonials/{testimonialId}": {
+      "schema": "testimonial",
+      "description": "User reviews and opinions"
+    },
+    "partners/{partnerId}": {
+      "schema": "partner",
+      "description": "Logos of association partners"
+    }
+  }
+}

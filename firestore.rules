@@ -1,0 +1,145 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- 3. Path Variable Hardening ---
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // --- 4. Tiered Identity Logic ---
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.uid == "448tPJFMzCX1Tiz6mWo1h4Y3ImZ2" ||
+        (request.auth.token.email != null && (
+          request.auth.token.email.lower() == "moatadidrayan7@gmail.com" ||
+          request.auth.token.email.lower() == "elmoatadiderayan@gmail.com"
+        ))
+      );
+    }
+
+    // Helper for incoming and existing data
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // --- 2. Validation Blueprints ---
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'displayName', 'role', 'createdAt']) &&
+             data.uid is string && data.uid.size() <= 128 &&
+             data.email is string && data.email.size() <= 200 &&
+             data.displayName is string && data.displayName.size() <= 100 &&
+             data.role in ['student', 'teacher', 'admin'] &&
+             (data.createdAt is string || data.createdAt is timestamp);
+    }
+
+    function isValidCourse(data) {
+       return data.keys().hasAll(['title', 'content', 'filiere', 'level', 'author', 'authorId', 'createdAt']) &&
+              data.title is string && data.title.size() <= 200 &&
+              data.content is string && data.content.size() <= 10000 &&
+              data.authorId is string &&
+              data.authorId == request.auth.uid &&
+              (data.createdAt is timestamp || data.createdAt is string);
+    }
+
+    function isValidAnnouncement(data) {
+      return data.keys().hasAll(['title', 'content', 'category', 'date', 'createdAt']) &&
+             data.title is string && data.content is string && data.category is string &&
+             data.title.size() <= 300 && data.content.size() <= 20000 &&
+             data.category in ["Événement", "Forum", "Compétition", "Nouveauté", "Admin", "Urgent"] &&
+             data.date != null && data.createdAt != null;
+    }
+
+    function isValidTestimonial(data) {
+      return data.keys().hasAll(['name', 'rating', 'comment', 'createdAt']) &&
+             data.name is string && data.name.size() <= 100 &&
+             data.comment is string && data.comment.size() <= 500 &&
+             data.rating >= 1 && data.rating <= 5 &&
+             data.createdAt != null;
+    }
+
+    function isValidPartner(data) {
+      return data.keys().hasAll(['name', 'logoUrl', 'createdAt']) &&
+             data.name is string && data.name.size() <= 100 &&
+             data.logoUrl is string && data.logoUrl.size() <= 2000000 &&
+             (data.websiteUrl == null || (data.websiteUrl is string && data.websiteUrl.size() <= 500)) &&
+             data.createdAt != null;
+    }
+
+    function isValidCommunityDoc(data) {
+      return data.keys().hasAll(['title', 'fileData', 'authorId', 'authorName', 'createdAt']) &&
+             data.title is string && data.title.size() <= 200 &&
+             data.fileData is string && data.fileData.size() <= 2000000 &&
+             data.authorId == request.auth.uid &&
+             data.createdAt != null;
+    }
+
+    // --- 0. Global Safety Net ---
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /testimonials/{testimonialId} {
+      allow read: if true;
+      allow create: if isValidTestimonial(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // --- User Profiles ---
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidId(userId) && (
+        // Allow partial updates to profile fields
+        incoming().diff(existing()).affectedKeys().hasAny(['displayName', 'phoneNumber', 'role'])
+      );
+    }
+    
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // --- 8. Community Courses (Secure List Queries) ---
+    match /courses/{courseId} {
+      allow get: if isSignedIn() && isValidId(courseId);
+      allow list: if isSignedIn(); // Query enforcement: client must query while signed in
+      allow create: if isSignedIn() && isValidId(courseId) && isValidCourse(incoming());
+      allow update: if isSignedIn() && isValidId(courseId) && 
+                    existing().authorId == request.auth.uid &&
+                    incoming().authorId == existing().authorId &&
+                    incoming().diff(existing()).affectedKeys().hasAny(['title', 'content', 'filiere', 'level']);
+      allow delete: if isSignedIn() && isValidId(courseId) && 
+                    existing().authorId == request.auth.uid;
+    }
+
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /partners/{partnerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /community_documents/{docId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidCommunityDoc(incoming());
+      allow delete: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
