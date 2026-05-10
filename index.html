@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Al Kendi - Association des Jeunes</title>
+    <script>
+      window.onerror = function(msg, url, lineNo, columnNo, error) {
+        var root = document.getElementById('root');
+        if (root) {
+          root.innerHTML = '<div style="padding: 20px; color: red; font-family: sans-serif;">' +
+            '<h1>Erreur Script</h1>' +
+            '<p>' + msg + '</p>' +
+            '<p>Ligne: ' + lineNo + '</p>' +
+            '</div>';
+        }
+        return false;
+      };
+    </script>
   </head>
   <body class="bg-white">
     <div id="root"></div>
