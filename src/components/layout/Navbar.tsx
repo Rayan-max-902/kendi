@@ -3,8 +3,9 @@ import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Menu, X, Rocket, Bell, Users, GraduationCap, LogIn, LogOut, ShieldCheck } from "lucide-react";
 import { useAuth } from "../../lib/AuthContext";
-import { auth } from "../../lib/firebase";
+import { auth, db } from "../../lib/firebase";
 import { signOut } from "firebase/auth";
+import { doc, onSnapshot } from "firebase/firestore";
 import { cn } from "../../lib/utils";
 
 const ADMIN_EMAILS = ["moatadidrayan7@gmail.com", "elmoatadiderayan@gmail.com"];
@@ -19,6 +20,7 @@ const navItems = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [appConfig, setAppConfig] = useState<{ logoUrl?: string; associationName?: string }>({});
   const { user } = useAuth();
   const location = useLocation();
 
@@ -28,17 +30,34 @@ export default function Navbar() {
     setIsOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    const unsubConfig = onSnapshot(doc(db, "settings", "app"), (docSnap) => {
+      if (docSnap.exists()) {
+        setAppConfig(docSnap.data());
+      }
+    });
+    return () => unsubConfig();
+  }, []);
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-primary/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
-              <GraduationCap size={26} />
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white transition-transform overflow-hidden">
+              {appConfig.logoUrl ? (
+                <img src={appConfig.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+              ) : (
+                <div className="w-full h-full bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
+                  <GraduationCap size={26} />
+                </div>
+              )}
             </div>
             <div className="flex flex-col">
-              <span className="font-display font-extrabold text-xl leading-none text-slate-900 tracking-tight">AL KENDI</span>
+              <span className="font-display font-extrabold text-xl leading-none text-slate-900 tracking-tight uppercase">
+                {appConfig.associationName || "AL KENDI"}
+              </span>
               <span className="text-[11px] uppercase tracking-[0.2em] text-primary font-bold">Association</span>
             </div>
           </Link>

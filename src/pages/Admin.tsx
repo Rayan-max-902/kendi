@@ -26,11 +26,20 @@ export default function Admin() {
   const [partners, setPartners] = useState<any[]>([]);
   const [newPartner, setNewPartner] = useState({ name: "", logoUrl: "", websiteUrl: "" });
   const [announcements, setAnnouncements] = useState<any[]>([]);
-  const [newAnnouncement, setNewAnnouncement] = useState({ title: "", content: "", category: "Nouveauté", imageUrl: "", videoUrl: "" });
+  const [newAnnouncement, setNewAnnouncement] = useState({ 
+    title: "", 
+    content: "", 
+    category: "Nouveauté", 
+    images: [] as string[], 
+    videos: [] as string[], 
+    author: "",
+    manualDate: "" 
+  });
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [communityDocs, setCommunityDocs] = useState<any[]>([]);
   const [heroSettings, setHeroSettings] = useState({ videoUrl: "", imageUrl: "" });
+  const [appConfig, setAppConfig] = useState({ logoUrl: "", associationName: "Al Kendi" });
   const [updatingConfig, setUpdatingConfig] = useState(false);
 
   const isAdmin = user && (ADMIN_UIDS.includes(user.uid) || (user.email && ADMIN_EMAILS.includes(user.email.toLowerCase())));
@@ -43,7 +52,7 @@ export default function Admin() {
       setPartners(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
 
-    const qAnnouncements = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
+    const qAnnouncements = query(collection(db, "announcements"), orderBy("date", "desc"));
     const unsubscribeAnnouncements = onSnapshot(qAnnouncements, (snapshot) => {
       setAnnouncements(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
@@ -69,6 +78,12 @@ export default function Admin() {
       }
     });
 
+    const unsubConfig = onSnapshot(doc(db, "settings", "app"), (docSnap) => {
+      if (docSnap.exists()) {
+        setAppConfig(docSnap.data() as any);
+      }
+    });
+
     return () => {
       unsubscribePartners();
       unsubscribeAnnouncements();
@@ -76,13 +91,14 @@ export default function Admin() {
       unsubscribeCourses();
       unsubscribeDocs();
       unsubHero();
+      unsubConfig();
     };
   }, [isAdmin]);
 
   if (loading) return null;
   if (!isAdmin) return <Navigate to="/" />;
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'partner' | 'logo') => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 1024 * 1024) {
@@ -91,7 +107,11 @@ export default function Admin() {
       }
       const reader = new FileReader();
       reader.onloadend = () => {
-        setNewPartner(prev => ({ ...prev, logoUrl: reader.result as string }));
+        if (type === 'partner') {
+          setNewPartner(prev => ({ ...prev, logoUrl: reader.result as string }));
+        } else {
+          setAppConfig(prev => ({ ...prev, logoUrl: reader.result as string }));
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -125,24 +145,41 @@ export default function Admin() {
     try {
       await addDoc(collection(db, "announcements"), {
         ...newAnnouncement,
-        date: new Date().toISOString(),
+        date: newAnnouncement.manualDate || new Date().toISOString(),
         createdAt: serverTimestamp()
       });
-      setNewAnnouncement({ title: "", content: "", category: "Nouveauté", imageUrl: "", videoUrl: "" });
+      setNewAnnouncement({ 
+        title: "", 
+        content: "", 
+        category: "Nouveauté", 
+        images: [], 
+        videos: [], 
+        author: "",
+        manualDate: "" 
+      });
     } catch (error) {
       console.error("Error adding announcement:", error);
     }
   };
 
-  const handleUpdateHero = async (e: React.FormEvent) => {
+  const handleUpdateConfig = async (e: React.FormEvent) => {
     e.preventDefault();
     setUpdatingConfig(true);
     try {
       const { setDoc } = await import("firebase/firestore");
+      
+      // Update Hero
       await setDoc(doc(db, "settings", "hero"), {
         ...heroSettings,
         updatedAt: serverTimestamp()
       }, { merge: true });
+
+      // Update App General Config
+      await setDoc(doc(db, "settings", "app"), {
+        ...appConfig,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
       alert("Paramètres mis à jour !");
     } catch (err) {
       console.error(err);
@@ -155,16 +192,42 @@ export default function Admin() {
   const handleAnnouncementFile = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video') => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Le fichier est trop lourd (max 2Mo)");
+      return;
+    }
+
     const reader = new FileReader();
     reader.onloadend = () => {
-      setNewAnnouncement(prev => ({ ...prev, [type === 'image' ? 'imageUrl' : 'videoUrl']: reader.result as string }));
+      const result = reader.result as string;
+      setNewAnnouncement(prev => ({ 
+        ...prev, 
+        [type === 'image' ? 'images' : 'videos']: [...(type === 'image' ? prev.images : prev.videos), result]
+      }));
     };
     reader.readAsDataURL(file);
+    // Reset input
+    e.target.value = "";
+  };
+
+  const removeMedia = (index: number, type: 'image' | 'video') => {
+    setNewAnnouncement(prev => ({
+      ...prev,
+      [type === 'image' ? 'images' : 'videos']: (type === 'image' ? prev.images : prev.videos).filter((_, i) => i !== index)
+    }));
   };
 
   const handleDeleteAnnouncement = async (id: string) => {
+    if (!id) return;
     if (window.confirm("Supprimer cette annonce ?")) {
-      await deleteDoc(doc(db, "announcements", id));
+      try {
+        await deleteDoc(doc(db, "announcements", id));
+        alert("Annonce supprimée !");
+      } catch (err) {
+        console.error("Error deleting announcement:", err);
+        alert("Erreur lors de la suppression : " + (err instanceof Error ? err.message : String(err)));
+      }
     }
   };
 
@@ -259,12 +322,7 @@ export default function Admin() {
                         <div className="space-y-2">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Logo du Partenaire</label>
                           <div className="relative group/upload">
-                            <input 
-                              type="file" 
-                              accept="image/*"
-                              onChange={handleImageUpload}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                            />
+                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'partner')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                             <div className={`w-full h-32 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-2 ${newPartner.logoUrl ? 'border-primary bg-primary/5' : 'border-slate-200 bg-slate-50 group-hover/upload:border-primary group-hover/upload:bg-white'}`}>
                               {newPartner.logoUrl ? (
                                 <img src={newPartner.logoUrl} alt="Preview" className="h-20 object-contain" />
@@ -377,17 +435,66 @@ export default function Admin() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Illustration (Image/Vidéo)</label>
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date de l'Annonce</label>
+                          <input 
+                            type="datetime-local" 
+                            value={newAnnouncement.manualDate}
+                            onChange={(e) => setNewAnnouncement(prev => ({ ...prev, manualDate: e.target.value }))}
+                            className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-white outline-none transition-all font-bold"
+                          />
+                        </div>
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Illustrations (Plusieurs possibles)</label>
                           <div className="grid grid-cols-2 gap-4">
                             <input type="file" accept="image/*" onChange={(e) => handleAnnouncementFile(e, 'image')} className="hidden" id="ann-img" />
                             <label htmlFor="ann-img" className="px-4 py-3 bg-slate-50 border-2 border-dashed border-slate-100 rounded-xl text-[10px] font-bold text-slate-400 text-center cursor-pointer hover:border-primary transition-all">
-                              {newAnnouncement.imageUrl ? "Image OK ✓" : "Image"}
+                              + Ajouter Image
                             </label>
                             <input type="file" accept="video/*" onChange={(e) => handleAnnouncementFile(e, 'video')} className="hidden" id="ann-vid" />
                             <label htmlFor="ann-vid" className="px-4 py-3 bg-slate-50 border-2 border-dashed border-slate-100 rounded-xl text-[10px] font-bold text-slate-400 text-center cursor-pointer hover:border-primary transition-all">
-                              {newAnnouncement.videoUrl ? "Vidéo OK ✓" : "Vidéo"}
+                              + Ajouter Vidéo
                             </label>
                           </div>
+                          
+                          {/* Previews */}
+                          {(newAnnouncement.images.length > 0 || newAnnouncement.videos.length > 0) && (
+                            <div className="grid grid-cols-3 gap-2 mt-4">
+                              {newAnnouncement.images.map((img, idx) => (
+                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-slate-200 group/item">
+                                  <img src={img} className="w-full h-full object-cover" alt="Preview" />
+                                  <button 
+                                    type="button"
+                                    onClick={() => removeMedia(idx, 'image')}
+                                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+                              ))}
+                              {newAnnouncement.videos.map((vid, idx) => (
+                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-slate-200 group/item bg-slate-900 flex items-center justify-center">
+                                  <LinkIcon className="text-white/20" size={24} />
+                                  <button 
+                                    type="button"
+                                    onClick={() => removeMedia(idx, 'video')}
+                                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Auteur / Réalisé par</label>
+                          <input 
+                            type="text" 
+                            value={newAnnouncement.author || ''}
+                            onChange={(e) => setNewAnnouncement(prev => ({ ...prev, author: e.target.value }))}
+                            className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-white outline-none transition-all font-bold"
+                            placeholder="Nom du réalisateur..."
+                          />
                         </div>
                         <button 
                           type="submit" 
@@ -424,20 +531,24 @@ export default function Admin() {
                                 </div>
                                 <h3 className="font-display font-black uppercase tracking-tight text-slate-900 flex items-center gap-2">
                                   {item.title}
-                                  {(item.imageUrl || item.videoUrl) && (
+                                  {((item.images && item.images.length > 0) || (item.videos && item.videos.length > 0)) && (
                                     <span className="flex gap-1">
-                                      {item.imageUrl && <ImageIcon size={12} className="text-primary" />}
-                                      {item.videoUrl && <LinkIcon size={12} className="text-primary" />}
+                                      {item.images && item.images.length > 0 && <ImageIcon size={12} className="text-primary" />}
+                                      {item.videos && item.videos.length > 0 && <LinkIcon size={12} className="text-primary" />}
                                     </span>
                                   )}
                                 </h3>
                               </div>
                             </div>
                             <button 
-                              onClick={() => handleDeleteAnnouncement(item.id)}
-                              className="p-3 bg-red-50 text-red-500 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white"
+                              onClick={() => {
+                                console.log("Deleting announcement with ID:", item.id);
+                                handleDeleteAnnouncement(item.id);
+                              }}
+                              className="p-4 bg-red-50 text-red-600 rounded-2xl transition-all hover:bg-red-600 hover:text-white shadow-md active:scale-90 border-2 border-red-100 flex items-center justify-center group/del"
+                              title="Supprimer Définitivement"
                             >
-                              <Trash2 size={18} />
+                              <Trash2 size={20} className="group-hover/del:animate-bounce" />
                             </button>
                           </motion.div>
                         ))}
@@ -572,10 +683,53 @@ export default function Admin() {
                 return (
                   <div className="max-w-2xl mx-auto space-y-10">
                     <div className="bg-white p-10 rounded-[3rem] shadow-xl shadow-slate-200/50 border border-slate-100">
-                      <h3 className="text-2xl font-display font-black mb-8 uppercase tracking-tight">Configuration Hero</h3>
-                      <form onSubmit={handleUpdateHero} className="space-y-8">
+                      <div className="flex items-center justify-between mb-8">
+                        <h3 className="text-2xl font-display font-black uppercase tracking-tight">Paramètres Généraux</h3>
+                        {appConfig.logoUrl && (
+                          <div className="w-16 h-16 rounded-2xl bg-slate-50 p-2 flex items-center justify-center border border-slate-100 shadow-inner">
+                            <img src={appConfig.logoUrl} alt="Logo actuel" className="max-w-full max-h-full object-contain" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      <form onSubmit={handleUpdateConfig} className="space-y-8">
                         <div className="space-y-4">
-                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Vidéo de fond (Lien ou Fichier)</label>
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom de l'Association</label>
+                          <input 
+                            type="text" 
+                            value={appConfig.associationName}
+                            onChange={(e) => setAppConfig(prev => ({ ...prev, associationName: e.target.value }))}
+                            className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary outline-none font-bold text-sm"
+                            placeholder="Nom affiché..."
+                          />
+                        </div>
+
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Logo de l'Association</label>
+                          <div className="relative group/logo">
+                            <input 
+                              type="file" 
+                              accept="image/*"
+                              onChange={(e) => handleImageUpload(e, 'logo')}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            <div className={`w-full py-10 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-3 ${appConfig.logoUrl ? 'border-primary bg-primary/5' : 'border-slate-200 bg-slate-50 group-hover/logo:border-primary group-hover/logo:bg-white'}`}>
+                              {appConfig.logoUrl ? (
+                                <img src={appConfig.logoUrl} alt="Logo" className="h-20 object-contain" />
+                              ) : (
+                                <>
+                                  <ImageIcon className="text-slate-300 group-hover/logo:text-primary transition-colors" size={40} />
+                                  <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Cliquer pour changer le logo</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <hr className="border-slate-100" />
+
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Vidéo de fond Hero (Lien)</label>
                           <input 
                             type="text" 
                             value={heroSettings.videoUrl}
@@ -586,7 +740,7 @@ export default function Admin() {
                           <p className="text-[9px] text-slate-400 font-medium px-2 italic">Laissez vide pour utiliser une image à la place.</p>
                         </div>
                         <div className="space-y-4">
-                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Image de fond (Fallback)</label>
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Image de fond Hero (Fallback)</label>
                           <input 
                             type="text" 
                             value={heroSettings.imageUrl}
@@ -600,7 +754,7 @@ export default function Admin() {
                           disabled={updatingConfig}
                           className="w-full py-5 bg-primary text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20 transition-all hover:scale-[1.02]"
                         >
-                          {updatingConfig ? "Mise à jour..." : "Enregistrer les modifications"}
+                          {updatingConfig ? "Mise à jour..." : "Enregistrer tous les paramètres"}
                         </button>
                       </form>
                     </div>

@@ -1,7 +1,7 @@
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "motion/react";
 import React, { useEffect, useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, UserCheck, ShieldCheck, Cpu, Code, PieChart, Bell, Calendar, Video, Star, Quote, GraduationCap, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, BookOpen, UserCheck, ShieldCheck, Cpu, Code, PieChart, Bell, Calendar, Video, Star, Quote, GraduationCap, ChevronDown, ChevronUp, Image as ImageIcon } from "lucide-react";
 import { collection, query, orderBy, limit, onSnapshot, doc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
@@ -13,8 +13,8 @@ interface RecentAnnouncement {
   content: string;
   date: string;
   category: string;
-  imageUrl?: string;
-  videoUrl?: string;
+  images?: string[];
+  videos?: string[];
   status?: string;
 }
 
@@ -32,6 +32,9 @@ export default function Home() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [newOpinion, setNewOpinion] = useState({ name: "", rating: 5, comment: "" });
   const [submittingOpinion, setSubmittingOpinion] = useState(false);
+  const [appConfig, setAppConfig] = useState<{ logoUrl?: string; associationName?: string }>({
+    associationName: "AL KENDI"
+  });
 
   useEffect(() => {
     // Announcements
@@ -49,6 +52,13 @@ export default function Home() {
       }
     }, (error) => {
       console.error("Error fetching hero settings:", error);
+    });
+
+    // App Config
+    const unsubConfig = onSnapshot(doc(db, "settings", "app"), (docSnap) => {
+      if (docSnap.exists()) {
+        setAppConfig(docSnap.data());
+      }
     });
 
     // Testimonials
@@ -169,7 +179,7 @@ export default function Home() {
         </div>
 
         {/* Bottom Wave - Hero to Stats */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] transform translate-y-1">
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] transform translate-y-1 rotate-180">
           <svg className="relative block w-[calc(130%+1.3px)] h-[80px] animate-wave" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5,73.84-4.36,147.54,16.88,218.2,35.26,69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113,2.04,1200,0Z" fill="#f8fafc"></path>
           </svg>
@@ -191,6 +201,84 @@ export default function Home() {
                 <div className="text-xs font-bold text-primary uppercase tracking-[0.2em]">{stat.label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Recent Announcements Section */}
+      <section className="py-32 bg-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-end gap-10 mb-20 text-left">
+            <div className="max-w-2xl">
+              <div className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-4 text-left">Actualités</div>
+              <h2 className="text-5xl font-display font-black leading-none uppercase tracking-tighter text-slate-900">
+                Nos Dernières <br /> <span className="text-primary italic">Annonces</span>
+              </h2>
+            </div>
+            <Link 
+              to="/announcements"
+              className="px-8 py-3 border border-slate-200 hover:border-primary hover:bg-primary hover:text-white rounded-xl font-bold transition-all uppercase tracking-widest text-sm text-slate-600"
+            >
+              Voir tout le journal <ArrowRight size={16} className="inline ml-2" />
+            </Link>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-10">
+            {recentAnnouncements.length > 0 ? (
+              recentAnnouncements.map((ann, i) => (
+                <motion.div
+                  key={ann.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="group flex flex-col h-full bg-slate-50 rounded-[2.5rem] border border-slate-100 overflow-hidden hover:bg-white hover:shadow-2xl transition-all duration-500"
+                >
+                  <div className="relative aspect-video overflow-hidden">
+                    {ann.images && ann.images.length > 0 ? (
+                      <img 
+                        src={ann.images[0]} 
+                        alt={ann.title} 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-primary/5 flex items-center justify-center text-primary/30">
+                        <ImageIcon size={64} />
+                      </div>
+                    )}
+                    <div className="absolute top-4 left-4">
+                      <span className="px-4 py-1.5 bg-primary text-white text-[8px] font-black rounded-full uppercase tracking-widest shadow-lg shadow-primary/20">
+                        {ann.category}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="p-8 flex flex-col flex-grow">
+                    <div className="flex items-center gap-2 text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-4">
+                      <Calendar size={12} className="text-primary" />
+                      {new Date(ann.date).toLocaleDateString("fr-FR")}
+                    </div>
+                    <h3 className="text-xl font-display font-black text-slate-900 uppercase tracking-tight mb-4 line-clamp-2 group-hover:text-primary transition-colors">
+                      {ann.title}
+                    </h3>
+                    <p className="text-slate-500 text-sm font-medium mb-8 line-clamp-3 leading-relaxed">
+                      {ann.content}
+                    </p>
+                    <Link 
+                      to="/announcements" 
+                      className="mt-auto inline-flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-widest hover:gap-4 transition-all"
+                    >
+                      Lire la suite <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-full py-20 text-center border-2 border-dashed border-slate-100 rounded-[3rem]">
+                <Bell className="mx-auto text-slate-200 mb-4" size={48} />
+                <p className="font-bold text-slate-400">Aucune annonce récente</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -273,8 +361,11 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Board Members Section */}
+        <BoardMembersSection />
+
         {/* Bottom Wave to dark section */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] rotate-180">
           <svg className="relative block w-[calc(134%+1.3px)] h-[80px] animate-wave-reverse" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" fill="#0f172a"></path>
           </svg>
@@ -332,7 +423,7 @@ export default function Home() {
         </div>
 
         {/* Bottom Wave to testimonials */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] rotate-180">
           <svg className="relative block w-[calc(134%+1.3px)] h-[80px] animate-wave" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5,73.84-4.36,147.54,16.88,218.2,35.26,69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113,2.04,1200,0Z" fill="#ffffff"></path>
           </svg>
@@ -342,7 +433,7 @@ export default function Home() {
       {/* Testimonials section - Glass Design */}
       <section className="py-32 bg-white relative">
         {/* Top Wave transition from dark Filieres */}
-        <div className="absolute top-0 left-0 w-full overflow-hidden leading-[0] rotate-180 opacity-10 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full overflow-hidden leading-[0] opacity-10 pointer-events-none rotate-180">
           <svg className="relative block w-[calc(134%+1.3px)] h-[60px] animate-wave-slow" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" fill="#0f172a"></path>
           </svg>
@@ -494,7 +585,7 @@ export default function Home() {
       </section>
 
       {/* Bottom Wave to Footer */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] rotate-180">
           <svg className="relative block w-[calc(134%+1.3px)] h-[80px] animate-wave-reverse" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" fill="#0f172a"></path>
           </svg>
@@ -521,17 +612,23 @@ export default function Home() {
           
           <div className="mt-32 pt-16 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center text-primary">
-                <GraduationCap size={24} />
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-primary overflow-hidden">
+                {appConfig.logoUrl ? (
+                  <img src={appConfig.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                ) : (
+                  <div className="w-full h-full bg-primary/20 flex items-center justify-center">
+                    <GraduationCap size={28} />
+                  </div>
+                )}
               </div>
-              <span className="font-display font-black text-xl tracking-tight">AL KENDI</span>
+              <span className="font-display font-black text-2xl tracking-tight uppercase">{appConfig.associationName || "AL KENDI"}</span>
             </div>
             <div className="flex gap-10 text-xs font-bold uppercase tracking-widest text-slate-500">
               <Link to="/branches" className="hover:text-white transition-colors">Filières</Link>
               <Link to="/announcements" className="hover:text-white transition-colors">Actualités</Link>
               <Link to="/community" className="hover:text-white transition-colors">Communauté</Link>
             </div>
-            <p className="text-slate-500 text-xs font-medium uppercase tracking-[0.2em]">© 2024 Al Kendi. Design Premium.</p>
+            <p className="text-slate-500 text-xs font-medium uppercase tracking-[0.2em]">© {new Date().getFullYear()} {appConfig.associationName || "Al Kendi"}. Design Premium.</p>
           </div>
         </div>
       </footer>
@@ -633,8 +730,90 @@ function StretchedText({ text }: { text: string }) {
   );
 }
 
+function BoardMembersSection() {
+  const members = [
+    { role: "Président(e) de l'association", name: "Dr. Lamia ELJADIRI", icon: <ShieldCheck size={28} />, color: "bg-red-500" },
+    { role: "Vice-président(e)", name: "Pr. Amal EL ALAMA", icon: <UserCheck size={28} />, color: "bg-slate-900" },
+    { role: "Trésorier(ère)", name: "Pr. Assia FADIL", icon: <PieChart size={28} />, color: "bg-slate-900" },
+    { role: "Trésorier(ère) adjoint(e)", name: "Dr. Mohamed HOUSNI", icon: <PieChart size={28} />, color: "bg-slate-900" },
+    { role: "Secrétaire général(e)", name: "Pr. Rachida ZATTI", icon: <BookOpen size={28} />, color: "bg-slate-900" },
+  ];
+
+  return (
+    <section className="py-24 bg-white relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest mb-4 border border-primary/10"
+          >
+            Le Bureau
+          </motion.div>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-5xl font-display font-black text-slate-900 uppercase tracking-tighter"
+          >
+            Les membres de <span className="text-primary italic">l'association</span>
+          </motion.h2>
+        </div>
+      </div>
+
+      <div className="flex relative overflow-hidden">
+        <div className="flex animate-marquee whitespace-nowrap py-10 items-center">
+          {[...members, ...members, ...members].map((member, i) => (
+            <div
+              key={`${member.name}-${i}`}
+              className="mx-6 sm:mx-10 flex-shrink-0"
+            >
+              <div
+                className="relative group p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex flex-col items-center text-center hover:bg-white hover:shadow-2xl transition-all duration-500 overflow-hidden w-[300px] sm:w-[350px]"
+              >
+                <div className={`w-20 h-20 ${member.color} rounded-3xl flex items-center justify-center text-white mb-6 group-hover:rotate-12 transition-transform duration-500 shadow-xl shadow-slate-200`}>
+                  {member.icon}
+                </div>
+                <div className="space-y-2 relative z-10 whitespace-normal">
+                  <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{member.role}</div>
+                  <h3 className="text-2xl font-display font-black text-slate-900 uppercase tracking-tight">{member.name}</h3>
+                </div>
+                
+                {/* Decorative elements */}
+                <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+                <div className="absolute top-0 left-0 w-full h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" />
+              </div>
+            </div>
+          ))}
+          
+          {/* Join cards for variety in the marquee */}
+          {[1, 2, 3].map((_, i) => (
+            <div key={`join-${i}`} className="mx-6 sm:mx-10 flex-shrink-0">
+              <Link
+                to="/signup"
+                className="relative group p-8 bg-primary rounded-[2.5rem] flex flex-col items-center justify-center text-center hover:shadow-[0_20px_50px_rgba(236,28,36,0.3)] transition-all duration-500 cursor-pointer w-[300px] sm:w-[350px] h-[280px] sm:h-[300px]"
+              >
+                <div className="text-white space-y-4">
+                  <h3 className="text-3xl font-display font-black uppercase tracking-tighter leading-none mb-4">Rejoignez <br /> le bureau</h3>
+                  <p className="text-white/80 text-sm font-medium whitespace-normal">Participez activement à la vie de l'association.</p>
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-white text-primary rounded-full group-hover:scale-110 transition-transform">
+                    <ArrowRight size={24} />
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.2),transparent)] pointer-events-none" />
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function PartnersSection() {
-  const [partners, setPartners] = useState<{ id: string; name: string; logoUrl: string }[]>([]);
+  const [partners, setPartners] = useState<{ id: string; name: string; logoUrl: string; websiteUrl?: string }[]>([]);
 
   useEffect(() => {
     const q = query(collection(db, "partners"), orderBy("createdAt", "desc"));
@@ -657,20 +836,25 @@ function PartnersSection() {
         <div className="w-24 h-1 bg-primary mx-auto rounded-full" />
       </div>
 
-      <div className="flex relative overflow-hidden group">
+      <div className="flex relative overflow-hidden">
         <div className="flex animate-marquee whitespace-nowrap py-10 items-center">
           {[...partners, ...partners, ...partners].map((partner, idx) => (
             <div 
               key={`${partner.id}-${idx}`} 
               className="mx-12 sm:mx-20 flex flex-col items-center gap-4 group/partner"
             >
-              <div className="w-32 h-32 sm:w-48 sm:h-48 bg-white rounded-3xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-center p-8 transition-all hover:shadow-xl hover:scale-105 group-hover:blur-[2px] hover:!blur-0 active:scale-95 grayscale hover:grayscale-0">
+              <a 
+                href={partner.websiteUrl || "#"} 
+                target={partner.websiteUrl ? "_blank" : undefined}
+                rel={partner.websiteUrl ? "noopener noreferrer" : undefined}
+                className={`w-32 h-32 sm:w-48 sm:h-48 bg-white rounded-3xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-center p-8 transition-all hover:shadow-xl hover:scale-105 active:scale-95 grayscale hover:grayscale-0 ${!partner.websiteUrl && "cursor-default"}`}
+              >
                 <img 
                   src={partner.logoUrl} 
                   alt={partner.name}
                   className="max-w-full max-h-full object-contain"
                 />
-              </div>
+              </a>
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-0 group-hover/partner:opacity-100 transition-opacity">
                 {partner.name}
               </span>

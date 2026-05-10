@@ -23,10 +23,11 @@
         "content": { "type": "string" },
         "category": { "type": "string", "enum": ["Événement", "Forum", "Compétition", "Nouveauté", "Admin", "Urgent"] },
         "status": { "type": "string", "enum": ["En cours", "Terminé"] },
-        "imageUrl": { "type": "string" },
-        "videoUrl": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "videos": { "type": "array", "items": { "type": "string" } },
+        "author": { "type": "string" },
         "date": { "type": "string", "format": "date-time" },
-        "author": { "type": "string" }
+        "manualDate": { "type": "string" }
       },
       "required": ["title", "content", "category", "date"]
     },
@@ -68,6 +69,18 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "logoUrl"]
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Global application configuration",
+      "type": "object",
+      "properties": {
+        "logoUrl": { "type": "string" },
+        "associationName": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "firestore": {
@@ -90,6 +103,10 @@
     "partners/{partnerId}": {
       "schema": "partner",
       "description": "Logos of association partners"
+    },
+    "settings/{settingId}": {
+      "schema": "settings",
+      "description": "App global configuration"
     }
   }
 }

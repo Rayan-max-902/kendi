@@ -4,11 +4,11 @@ let genAI: any = null;
 
 function getAI() {
   if (!genAI) {
-    const apiKey = (process.env.GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY) as string;
+    const apiKey = (process.env.GEMINI_API_KEY || (import.meta as any).env.VITE_GEMINI_API_KEY) as string;
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY is not set. Please set GEMINI_API_KEY in environment variables.");
     }
-    genAI = new GoogleGenAI(apiKey);
+    genAI = new GoogleGenAI({ apiKey });
   }
   return genAI;
 }
