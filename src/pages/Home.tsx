@@ -38,6 +38,8 @@ export default function Home() {
     const q = query(collection(db, "announcements"), orderBy("date", "desc"), limit(3));
     const unsubAnn = onSnapshot(q, (snapshot) => {
       setRecentAnnouncements(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as RecentAnnouncement)));
+    }, (error) => {
+      console.error("Error fetching announcements:", error);
     });
 
     // Hero Settings
@@ -45,12 +47,16 @@ export default function Home() {
       if (docSnap.exists()) {
         setHeroSettings(docSnap.data());
       }
+    }, (error) => {
+      console.error("Error fetching hero settings:", error);
     });
 
     // Testimonials
     const qt = query(collection(db, "testimonials"), orderBy("createdAt", "desc"), limit(6));
     const unsubTest = onSnapshot(qt, (snapshot) => {
       setTestimonials(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial)));
+    }, (error) => {
+      console.error("Error fetching testimonials:", error);
     });
 
     return () => {
