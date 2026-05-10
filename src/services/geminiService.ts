@@ -1,6 +1,17 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let genAI: any = null;
+
+function getAI() {
+  if (!genAI) {
+    const apiKey = (process.env.GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY) as string;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not set. Please set GEMINI_API_KEY in environment variables.");
+    }
+    genAI = new GoogleGenAI(apiKey);
+  }
+  return genAI;
+}
 
 const SYSTEM_INSTRUCTION = `
 You are the Al Kendi AI Assistant, specialized in helping members of the "Association des Jeunes Al Kendi".
@@ -18,17 +29,17 @@ IMPORTANT RULES:
 
 export async function askAI(prompt: string) {
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.7,
-      },
+    const ai = getAI();
+    const model = ai.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      systemInstruction: SYSTEM_INSTRUCTION,
     });
-    return response.text;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
   } catch (error) {
     console.error("Gemini AI Error:", error);
-    return "Désolé, je rencontre une petite erreur technique. Réessayez plus tard !";
+    return "Désolé, je rencontre une petite erreur technique (clé API manquante ou invalide). Réessayez plus tard !";
   }
 }
