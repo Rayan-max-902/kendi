@@ -6,8 +6,13 @@ import { auth, db, googleProvider } from "../lib/firebase";
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signInWithPopup } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { cn, handleFirestoreError, OperationType } from "../lib/utils";
+import CustomSelect from "../components/CustomSelect";
 
 const FILIERES = ["Développement de l'IA", "Développement AI", "Comptabilité et Gestion"];
+const LEVELS = [
+  { value: "1ère Année", label: "1ère Année" },
+  { value: "2ème Année", label: "2ème Année" },
+];
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -17,7 +22,8 @@ export default function Signup() {
     password: "",
     confirmPassword: "",
     role: "student" as "student" | "teacher",
-    filiere: "Développement App"
+    filiere: "Développement de l'IA",
+    level: "1ère Année"
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -34,6 +40,7 @@ export default function Signup() {
     setLoading(true);
     setError("");
     try {
+      // 1. Create Auth User
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
@@ -45,7 +52,7 @@ export default function Signup() {
         console.warn("Erreur d'envoi d'email de vérification:", emailErr);
       }
 
-      // Save user profile in Firestore
+      // 2. Save user profile in Firestore
       const userPath = `users/${user.uid}`;
       try {
         await setDoc(doc(db, userPath), {
@@ -55,6 +62,7 @@ export default function Signup() {
           phoneNumber: formData.phoneNumber,
           role: formData.role,
           filiere: formData.filiere,
+          level: formData.level,
           createdAt: new Date().toISOString()
         });
       } catch (firestoreErr) {
@@ -230,24 +238,22 @@ export default function Signup() {
             </div>
           </div>
 
-          <div className="space-y-6">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 text-center block">Votre Filière d'intérêt</label>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {FILIERES.map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, filiere: f }))}
-                  className={cn(
-                    "px-4 py-5 rounded-2xl font-black text-[10px] uppercase tracking-tighter transition-all border-2",
-                    formData.filiere === f 
-                      ? "bg-primary text-white border-primary shadow-2xl shadow-primary/20 scale-105" 
-                      : "bg-slate-50 text-slate-500 border-transparent hover:border-primary/20"
-                  )}
-                >
-                  {f}
-                </button>
-              ))}
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Filière d'intérêt</label>
+              <CustomSelect
+                value={formData.filiere}
+                onChange={(val) => setFormData(prev => ({ ...prev, filiere: val }))}
+                options={FILIERES.map(f => ({ value: f, label: f }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Niveau d'études</label>
+              <CustomSelect
+                value={formData.level}
+                onChange={(val) => setFormData(prev => ({ ...prev, level: val }))}
+                options={LEVELS}
+              />
             </div>
           </div>
 

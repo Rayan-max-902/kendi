@@ -1,7 +1,7 @@
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "motion/react";
 import React, { useEffect, useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, UserCheck, ShieldCheck, Cpu, Code, PieChart, Bell, Calendar, Video, Star, Quote, GraduationCap, ChevronDown, ChevronUp, Image as ImageIcon } from "lucide-react";
+import { ArrowRight, BookOpen, UserCheck, ShieldCheck, Cpu, Code, PieChart, Bell, Calendar, Video, Star, Quote, ChevronDown, ChevronUp, Bot, Image as ImageIcon } from "lucide-react";
 import { collection, query, orderBy, limit, onSnapshot, doc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
@@ -32,9 +32,6 @@ export default function Home() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [newOpinion, setNewOpinion] = useState({ name: "", rating: 5, comment: "" });
   const [submittingOpinion, setSubmittingOpinion] = useState(false);
-  const [appConfig, setAppConfig] = useState<{ logoUrl?: string; associationName?: string }>({
-    associationName: "AL KENDI"
-  });
 
   useEffect(() => {
     // Announcements
@@ -52,13 +49,6 @@ export default function Home() {
       }
     }, (error) => {
       console.error("Error fetching hero settings:", error);
-    });
-
-    // App Config
-    const unsubConfig = onSnapshot(doc(db, "settings", "app"), (docSnap) => {
-      if (docSnap.exists()) {
-        setAppConfig(docSnap.data());
-      }
     });
 
     // Testimonials
@@ -168,12 +158,16 @@ export default function Home() {
                 Rejoindre la Communauté
                 <ArrowRight size={24} />
               </Link>
-              <Link 
-                to="/branches"
-                className="px-10 py-5 bg-white/40 backdrop-blur-xl border-2 border-slate-900 text-slate-900 rounded-xl font-black transition-all hover:bg-slate-900 hover:text-white text-center flex items-center justify-center uppercase tracking-wider text-lg"
+              <button 
+                onClick={() => {
+                  const event = new CustomEvent('open-ai-chat');
+                  window.dispatchEvent(event);
+                }}
+                className="px-10 py-5 bg-slate-900 border-2 border-slate-900 text-white rounded-xl font-black transition-all hover:bg-slate-800 flex items-center justify-center gap-3 uppercase tracking-wider text-lg"
               >
-                Voir nos Filières
-              </Link>
+                <Bot size={24} className="text-primary" />
+                Interroger l'IA
+              </button>
             </div>
           </motion.div>
         </div>
@@ -592,46 +586,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer / CTA banner */}
-      <footer className="py-32 bg-slate-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#ec1c24_1px,transparent_1px)] [background-size:32px_32px]" />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest mb-10 text-primary">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            Adhésions Ouvertes
-          </div>
-          <h2 className="text-6xl sm:text-8xl font-display font-black mb-12 uppercase tracking-tighter leading-none">
-            L'Aventure <br /> Commence <span className="text-primary italic">Maintenant</span>
-          </h2>
-          <Link to="/signup" className="inline-flex items-center gap-4 px-14 py-6 bg-primary hover:bg-primary-hover rounded-xl font-black text-xl transition-all shadow-2xl shadow-primary/30 uppercase tracking-widest hover:scale-105 active:scale-95">
-            Devenir Membre
-            <ArrowRight size={28} />
-          </Link>
-          
-          <div className="mt-32 pt-16 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-10">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-primary overflow-hidden">
-                {appConfig.logoUrl ? (
-                  <img src={appConfig.logoUrl} alt="Logo" className="w-full h-full object-contain" />
-                ) : (
-                  <div className="w-full h-full bg-primary/20 flex items-center justify-center">
-                    <GraduationCap size={28} />
-                  </div>
-                )}
-              </div>
-              <span className="font-display font-black text-2xl tracking-tight uppercase">{appConfig.associationName || "AL KENDI"}</span>
-            </div>
-            <div className="flex gap-10 text-xs font-bold uppercase tracking-widest text-slate-500">
-              <Link to="/branches" className="hover:text-white transition-colors">Filières</Link>
-              <Link to="/announcements" className="hover:text-white transition-colors">Actualités</Link>
-              <Link to="/community" className="hover:text-white transition-colors">Communauté</Link>
-            </div>
-            <p className="text-slate-500 text-xs font-medium uppercase tracking-[0.2em]">© {new Date().getFullYear()} {appConfig.associationName || "Al Kendi"}. Design Premium.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { db, auth } from "../lib/firebase";
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc } from "firebase/firestore";
 import { useAuth } from "../lib/AuthContext";
 import { cn } from "../lib/utils";
+import CustomSelect from "../components/CustomSelect";
 
 interface Course {
   id: string;
@@ -43,7 +44,7 @@ export default function Community() {
     title: "",
     content: "",
     filiere: "Développement de l'IA",
-    level: "L1"
+    level: "1ère Année"
   });
 
   const [newDoc, setNewDoc] = useState({
@@ -108,7 +109,7 @@ export default function Community() {
           authorId: user.uid,
           createdAt: serverTimestamp()
         });
-        setNewCourse({ title: "", content: "", filiere: "IA", level: "L1" });
+        setNewCourse({ title: "", content: "", filiere: "Développement de l'IA", level: "1ère Année" });
       } else {
         if (!newDoc.fileData) throw new Error("Fichier requis");
         await addDoc(collection(db, "community_documents"), {
@@ -213,18 +214,17 @@ export default function Community() {
             />
           </div>
           {activeTab === "courses" && (
-            <div className="relative group">
-              <Filter className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors" size={24} />
-              <select 
-                value={filter} onChange={(e) => setFilter(e.target.value)}
-                className="w-full pl-16 pr-8 py-5 bg-white rounded-[2rem] border-2 border-transparent focus:border-primary outline-none shadow-sm font-bold text-slate-900 appearance-none cursor-pointer transition-all"
-              >
-                <option value="all">Toutes les filières</option>
-                <option value="Développement de l'IA">Développement de l'IA</option>
-                <option value="Développement AI">Développement AI</option>
-                <option value="Comptabilité et Gestion">Comptabilité et Gestion</option>
-              </select>
-            </div>
+            <CustomSelect
+              value={filter}
+              onChange={(val) => setFilter(val)}
+              options={[
+                { value: "all", label: "Toutes les filières" },
+                { value: "Développement de l'IA", label: "Développement de l'IA" },
+                { value: "Développement AI", label: "Développement AI" },
+                { value: "Comptabilité et Gestion", label: "Comptabilité et Gestion" },
+              ]}
+              className="md:col-span-1"
+            />
           )}
         </div>
 
@@ -332,24 +332,29 @@ export default function Community() {
                 <form onSubmit={handlePost} className="space-y-8">
                   {activeTab === "courses" ? (
                     <>
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="space-y-4">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Filière concernée</label>
-                          <select required value={newCourse.filiere} onChange={(e) => setNewCourse(prev => ({ ...prev, filiere: e.target.value }))}
-                            className="w-full px-6 py-5 bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl outline-none font-bold text-slate-900"
-                          >
-                            <option value="Développement de l'IA">Développement de l'IA</option>
-                            <option value="Développement AI">Développement AI</option>
-                            <option value="Comptabilité et Gestion">Comptabilité et Gestion</option>
-                          </select>
+                          <CustomSelect
+                            value={newCourse.filiere}
+                            onChange={(val) => setNewCourse(prev => ({ ...prev, filiere: val }))}
+                            options={[
+                              { value: "Développement de l'IA", label: "Développement de l'IA" },
+                              { value: "Développement AI", label: "Développement AI" },
+                              { value: "Comptabilité et Gestion", label: "Comptabilité et Gestion" },
+                            ]}
+                          />
                         </div>
                         <div className="space-y-4">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Niveau d'études</label>
-                          <select required value={newCourse.level} onChange={(e) => setNewCourse(prev => ({ ...prev, level: e.target.value }))}
-                            className="w-full px-6 py-5 bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl outline-none font-bold text-slate-900"
-                          >
-                            <option value="L1">Licence 1</option><option value="L2">Licence 2</option><option value="L3">Licence 3</option><option value="M1">Master 1</option><option value="M2">Master 2</option>
-                          </select>
+                          <CustomSelect
+                            value={newCourse.level}
+                            onChange={(val) => setNewCourse(prev => ({ ...prev, level: val }))}
+                            options={[
+                              { value: "1ère Année", label: "1ère Année" },
+                              { value: "2ème Année", label: "2ème Année" },
+                            ]}
+                          />
                         </div>
                       </div>
 

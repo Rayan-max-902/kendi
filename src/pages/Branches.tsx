@@ -49,15 +49,20 @@ const INITIAL_BRANCHES = [
   }
 ];
 
+const ACADEMIC_YEARS = [
+  { id: "1", label: "1ère Année", key: "modulesYear1" },
+  { id: "2", label: "2ème Année", key: "modulesYear2" },
+];
+
 export default function Branches() {
   const { user } = useAuth();
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
-  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [selectedYearIndex, setSelectedYearIndex] = useState<number | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  const handleYearClick = (branchId: string, year: number) => {
+  const handleYearClick = (branchId: string, yearIdx: number) => {
     setSelectedBranch(branchId);
-    setSelectedYear(year);
+    setSelectedYearIndex(yearIdx);
     setShowDetailModal(true);
   };
 
@@ -110,18 +115,21 @@ export default function Branches() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <button 
-                        onClick={() => handleYearClick(branch.id, 1)}
-                        className="py-5 bg-white border border-slate-100 hover:border-primary rounded-2xl font-black uppercase tracking-widest text-[10px] text-slate-900 transition-all shadow-sm hover:shadow-lg"
-                      >
-                        1ère Année
-                      </button>
-                      <button 
-                        onClick={() => handleYearClick(branch.id, 2)}
-                        className="py-5 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 transition-all hover:scale-105"
-                      >
-                        2ème Année
-                      </button>
+                      {ACADEMIC_YEARS.map((year, idx) => (
+                        <button 
+                          key={year.id}
+                          onClick={() => handleYearClick(branch.id, idx)}
+                          className={cn(
+                            "py-5 border rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2",
+                            idx === 0 
+                              ? "bg-white border-slate-100 text-slate-900 hover:border-primary hover:shadow-lg" 
+                              : "bg-primary text-white border-primary shadow-lg shadow-primary/20 hover:scale-105"
+                          )}
+                        >
+                          <BookOpen size={14} className={idx === 0 ? "text-primary" : "text-white"} />
+                          {year.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
                   
@@ -180,7 +188,7 @@ export default function Branches() {
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-6">
                     <span className="px-5 py-2 bg-primary text-white rounded-full font-black uppercase tracking-widest text-[10px]">
-                      {selectedYear === 1 ? "Première Année" : "Deuxième Année"}
+                      {selectedYearIndex !== null && ACADEMIC_YEARS[selectedYearIndex].label}
                     </span>
                     <h3 className="text-3xl font-display font-black text-slate-900 uppercase tracking-tighter">
                       {currentBranch.title}
@@ -194,7 +202,7 @@ export default function Branches() {
                         <h4 className="font-black uppercase tracking-widest text-[10px]">Modules Étudiés</h4>
                       </div>
                       <div className="space-y-4">
-                        {(selectedYear === 1 ? currentBranch.modulesYear1 : currentBranch.modulesYear2).map(m => (
+                        {selectedYearIndex !== null && (currentBranch[ACADEMIC_YEARS[selectedYearIndex].key as keyof typeof currentBranch] as string[]).map(m => (
                           <div key={m} className="flex items-center gap-3 bg-white p-4 rounded-xl border border-slate-100 text-sm font-bold text-slate-700">
                              <div className="w-1.5 h-1.5 bg-primary rounded-full" />
                              {m}

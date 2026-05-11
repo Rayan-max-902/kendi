@@ -1,45 +1,44 @@
 import { GoogleGenAI } from "@google/genai";
 
-let genAI: any = null;
+const apiKey = process.env.GEMINI_API_KEY;
 
-function getAI() {
-  if (!genAI) {
-    const apiKey = (process.env.GEMINI_API_KEY || (import.meta as any).env.VITE_GEMINI_API_KEY) as string;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is not set. Please set GEMINI_API_KEY in environment variables.");
-    }
-    genAI = new GoogleGenAI({ apiKey });
-  }
-  return genAI;
-}
+const ai = new GoogleGenAI({ apiKey: apiKey || "" });
 
 const SYSTEM_INSTRUCTION = `
-You are the Al Kendi AI Assistant, specialized in helping members of the "Association des Jeunes Al Kendi".
-Your primary goal is to provide information about the association, its events, and educational topics related to:
-1. Intelligence Artificielle (IA) and AI Development.
-2. Comptabilité et Gestion (CG).
-3. General educational support for students.
+Vous êtes l'Assistant IA d'Al Kendi, un expert dédié à l'accompagnement des membres de l'Association des Jeunes Al Kendi. 
+Votre ton doit être professionnel, encourageant, expert et bienveillant.
 
-IMPORTANT RULES:
-- If a question is NOT related to education, the association, or the filieres (IA, CG), politely inform the user that you are specialized only in Al Kendi's educational topics.
-- Provide clear, encouraging, and informative answers.
-- Use French primarily, as the association is based in a French-speaking context (Al Kendi).
-- Mention that users can find courses in the "Communauté" section if they are logged in.
+VOTRE MISSION :
+1. Aider les étudiants dans leurs parcours d'apprentissage, particulièrement en :
+   - Intelligence Artificielle (IA) et Développement Cloud/Web.
+   - Comptabilité, Gestion et Audit (CG).
+2. Fournir des informations précises sur l'association, ses événements et ses filières.
+3. Orienter les membres vers les ressources appropriées (Cours dans la section "Communauté", actualités, etc.).
+
+RÈGLES CRITIQUES :
+- Répondez TOUJOURS en Français.
+- Si une question n'est pas liée à l'éducation, à l'association ou aux domaines techniques cités, rappelez poliment votre spécialisation : "Je suis spécialisé pour vous accompagner dans votre parcours au sein d'Al Kendi et dans vos études techniques."
+- Évitez les réponses trop longues ; soyez structuré et utilisez des puces si nécessaire.
+- Encouragez les utilisateurs à se connecter pour accéder aux ressources exclusives.
 `;
 
-export async function askAI(prompt: string) {
+export async function askAI(prompt: string, history: { role: "user" | "model"; parts: { text: string }[] }[] = []) {
+  if (!apiKey) {
+    return "Désolé, la clé API Gemini n'est pas configurée. Veuillez la définir dans les variables d'environnement.";
+  }
+
   try {
-    const ai = getAI();
-    const model = ai.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      systemInstruction: SYSTEM_INSTRUCTION,
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: [...history, { role: "user", parts: [{ text: prompt }] }],
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+      }
     });
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
+    return response.text;
   } catch (error) {
     console.error("Gemini AI Error:", error);
-    return "Désolé, je rencontre une petite erreur technique (clé API manquante ou invalide). Réessayez plus tard !";
+    return "Désolé, je rencontre une petite erreur technique. Réessayez plus tard !";
   }
 }

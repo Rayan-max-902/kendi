@@ -20,6 +20,12 @@ export default function AIChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const handleOpenChat = () => setIsOpen(true);
+    window.addEventListener('open-ai-chat', handleOpenChat);
+    return () => window.removeEventListener('open-ai-chat', handleOpenChat);
+  }, []);
+
+  useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
@@ -33,7 +39,15 @@ export default function AIChat() {
     setInput("");
     setIsTyping(true);
 
-    const aiResponse = await askAI(input);
+    // Prepare history for API
+    const history = messages
+      .filter(m => m.id !== "1") // Skip initial welcome message if you want, or include it as assistant
+      .map(m => ({
+        role: m.role === "user" ? ("user" as const) : ("model" as const),
+        parts: [{ text: m.text }]
+      }));
+
+    const aiResponse = await askAI(input, history);
     const aiMsg: Message = { id: (Date.now() + 1).toString(), role: "ai", text: aiResponse || "Je n'ai pas pu générer de réponse." };
     
     setMessages(prev => [...prev, aiMsg]);

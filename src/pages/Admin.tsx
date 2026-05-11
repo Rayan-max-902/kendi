@@ -726,9 +726,7 @@ export default function Admin() {
                           </div>
                         </div>
 
-                        <hr className="border-slate-100" />
-
-                        <div className="space-y-4">
+                        <div className="space-y-4 pt-10 border-t border-slate-100">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Vidéo de fond Hero (Lien)</label>
                           <input 
                             type="text" 

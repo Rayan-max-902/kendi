@@ -2,6 +2,7 @@ import React, { ReactNode } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/AuthContext";
 import Navbar from "./components/layout/Navbar";
+import Footer from "./components/layout/Footer";
 import Home from "./pages/Home";
 import Announcements from "./pages/Announcements";
 import Community from "./pages/Community";
@@ -43,6 +44,7 @@ export default function App() {
             </Routes>
           </main>
           <AIChat />
+          <Footer />
         </div>
       </Router>
     </AuthProvider>
