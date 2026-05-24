@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { useAuth } from "../lib/AuthContext";
 import { Navigate } from "react-router-dom";
-import { Plus, Trash2, Image as ImageIcon, Link as LinkIcon, Building2, Megaphone, MessageSquare, GraduationCap } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon, Link as LinkIcon, Building2, Megaphone, MessageSquare, GraduationCap, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 // Admin UIDs and emails (same as firestore.rules)
@@ -22,6 +22,7 @@ const ADMIN_UIDS = ["448tPJFMzCX1Tiz6mWo1h4Y3ImZ2"];
 export default function Admin() {
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState<"announcements" | "partners" | "testimonials" | "community" | "config">("announcements");
+  const [deleteWarning, setDeleteWarning] = useState<string | null>(null);
   
   const [partners, setPartners] = useState<any[]>([]);
   const [newPartner, setNewPartner] = useState({ name: "", logoUrl: "", websiteUrl: "" });
@@ -135,7 +136,14 @@ export default function Admin() {
   };
 
   const handleDeletePartner = async (id: string) => {
-    alert("🔒 Cet élément est hautement protégé. Toutes les données de l'association (partenaires, articles, témoignages, cours, documents) sont configurées comme étant permanentes et insupprimables pour préserver l'historique complet de l'Association Al Kendi l'IA.");
+    if (window.confirm("Voulez-vous vraiment supprimer ce partenaire ? Cette action est irréversible.")) {
+      try {
+        await deleteDoc(doc(db, "partners", id));
+      } catch (error) {
+        console.error("Error deleting partner:", error);
+        alert("Erreur lors de la suppression du partenaire.");
+      }
+    }
   };
 
   const handleAddAnnouncement = async (e: React.FormEvent) => {
@@ -217,19 +225,47 @@ export default function Admin() {
   };
 
   const handleDeleteAnnouncement = async (id: string) => {
-    alert("🔒 Les articles et annonces sont configurés comme étant permanents et insupprimables pour conserver l'historique complet de l'Association Al Kendi l'IA.");
+    if (window.confirm("Voulez-vous vraiment supprimer cette annonce ? Cette action est irréversible.")) {
+      try {
+        await deleteDoc(doc(db, "announcements", id));
+      } catch (error) {
+        console.error("Error deleting announcement:", error);
+        alert("Erreur lors de la suppression de l'annonce.");
+      }
+    }
   };
 
   const handleDeleteTestimonial = async (id: string) => {
-    alert("🔒 Les témoignages sont configurés comme étant permanents et insupprimables pour conserver l'historique complet de l'Association Al Kendi l'IA.");
+    if (window.confirm("Voulez-vous vraiment supprimer ce témoignage ? Cette action est irréversible.")) {
+      try {
+        await deleteDoc(doc(db, "testimonials", id));
+      } catch (error) {
+        console.error("Error deleting testimonial:", error);
+        alert("Erreur lors de la suppression du témoignage.");
+      }
+    }
   };
 
   const handleDeleteCourse = async (id: string) => {
-    alert("🔒 Les cours et ressources partagés sont configurés comme étant permanents et insupprimables pour conserver l'historique complet de l'Association Al Kendi l'IA.");
+    if (window.confirm("Voulez-vous vraiment supprimer ce cours ? Cette action est irréversible.")) {
+      try {
+        await deleteDoc(doc(db, "courses", id));
+      } catch (error) {
+        console.error("Error deleting course:", error);
+        alert("Erreur lors de la suppression du cours.");
+      }
+    }
   };
 
   const handleDeleteDoc = async (id: string) => {
-    alert("🔒 Les documents partagés sont configurés comme étant permanents et insupprimables pour conserver l'historique complet de l'Association Al Kendi l'IA.");
+    if (window.confirm("Voulez-vous vraiment supprimer ce document ? Cette action est irréversible.")) {
+      try {
+        await deleteDoc(doc(db, "community_documents", id));
+      } catch (error) {
+        console.error("Error deleting document:", error);
+        alert("Erreur lors de la suppression du document.");
+      }
+    }
   };
 
   return (
@@ -747,6 +783,48 @@ export default function Admin() {
           })()}
         </main>
       </div>
+
+      {/* Absolute Protected Element Modal Toast */}
+      <AnimatePresence>
+        {deleteWarning && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md"
+            onClick={() => setDeleteWarning(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 relative text-center overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-red-500/5 rounded-full blur-3xl -z-10" />
+
+              <div className="mx-auto w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 border border-red-100 text-red-500">
+                <Lock size={32} />
+              </div>
+
+              <h3 className="text-xl font-display font-black text-slate-950 uppercase tracking-tight mb-3">
+                Élément Protégé
+              </h3>
+
+              <p className="text-sm font-semibold text-slate-600 leading-relaxed mb-6">
+                {deleteWarning}
+              </p>
+
+              <button 
+                onClick={() => setDeleteWarning(null)}
+                className="w-full py-4 bg-slate-950 hover:bg-slate-900 text-white rounded-xl font-black uppercase tracking-wider text-xs transition-all active:scale-95 shadow-md"
+              >
+                Compris
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

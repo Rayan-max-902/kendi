@@ -118,7 +118,7 @@ service cloud.firestore {
                     incoming().authorId == existing().authorId &&
                     incoming().diff(existing()).affectedKeys().hasAny(['title', 'content', 'filiere', 'level']);
       allow delete: if isSignedIn() && isValidId(courseId) && 
-                    existing().authorId == request.auth.uid;
+                    (existing().authorId == request.auth.uid || isAdmin());
     }
 
     match /announcements/{announcementId} {

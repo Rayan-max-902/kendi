@@ -833,21 +833,26 @@ function StretchedText({ text }: { text: string }) {
     );
   }
 
+  const words = text.split(" ");
   return (
-    <span className="inline-flex flex-wrap justify-center">
-      {text.split("").map((char, i) => (
-        <motion.span
-          key={i}
-          className="inline-block hover:text-primary transition-colors cursor-default"
-          whileHover={{ 
-            scaleY: 1.5, 
-            scaleX: 0.8,
-            translateY: -10,
-          }}
-          transition={{ type: "spring", stiffness: 400, damping: 10 }}
-        >
-          {char === " " ? "\u00A0" : char}
-        </motion.span>
+    <span className="inline-flex flex-wrap justify-center gap-x-[0.25em] gap-y-[0.1em]">
+      {words.map((word, wordIndex) => (
+        <span key={wordIndex} className="inline-block whitespace-nowrap">
+          {word.split("").map((char, charIndex) => (
+            <motion.span
+              key={charIndex}
+              className="inline-block hover:text-primary transition-colors cursor-default"
+              whileHover={{ 
+                scaleY: 1.5, 
+                scaleX: 0.8,
+                translateY: -10,
+              }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
+              {char}
+            </motion.span>
+          ))}
+        </span>
       ))}
     </span>
   );
