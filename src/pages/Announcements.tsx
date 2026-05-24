@@ -36,15 +36,7 @@ export default function Announcements() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Voulez-vous vraiment supprimer cette annonce ?")) {
-      try {
-        await deleteDoc(doc(db, "announcements", id));
-        alert("Annonce supprimée.");
-      } catch (err) {
-        console.error("Error deleting announcement:", err);
-        alert("Erreur lors de la suppression.");
-      }
-    }
+    alert("🔒 Les articles et annonces sont précieux pour l'association et sont configurés comme permanents et insupprimables.");
   };
 
   return (
@@ -55,7 +47,7 @@ export default function Announcements() {
             <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
               <Bell size={32} />
             </div>
-            <h1 className="text-5xl sm:text-6xl font-display font-black text-slate-900 leading-none uppercase tracking-tighter">Journal & <br /> <span className="text-primary italic">Actualités</span></h1>
+            <h1 className="text-3xl sm:text-6xl font-display font-black text-slate-900 leading-none uppercase tracking-tighter">Journal & <br /> <span className="text-primary italic">Actualités</span></h1>
           </div>
           <p className="text-slate-500 text-xl font-medium uppercase tracking-tight">Vivez les moments forts de l'Association Al Kendi au quotidien.</p>
         </header>
@@ -73,7 +65,7 @@ export default function Announcements() {
                 whileInView={{ opacity: 1, y: 0 }} 
                 viewport={{ once: true }} 
                 transition={{ delay: i * 0.1 }}
-                className="group relative bg-slate-50 rounded-[3rem] p-8 sm:p-14 border border-slate-100 hover:bg-white hover:shadow-2xl transition-all duration-500 overflow-hidden"
+                className="group relative bg-slate-50 rounded-[2.5rem] sm:rounded-[3rem] p-6 sm:p-14 border border-slate-100 hover:bg-white hover:shadow-2xl transition-all duration-500 overflow-hidden"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-8 mb-10">
                   <div className="flex flex-wrap items-center gap-4">

@@ -130,9 +130,7 @@ export default function Community() {
   };
 
   const handleDeleteDoc = async (id: string) => {
-    if (window.confirm("Supprimer ce document ?")) {
-      await deleteDoc(doc(db, "community_documents", id));
-    }
+    alert("🔒 Les documents partagés au sein de la communauté sont configurés comme étant permanents et insupprimables pour préserver le savoir collectif.");
   };
 
   const downloadFile = (fileData: string, fileName: string) => {
@@ -163,7 +161,7 @@ export default function Community() {
               <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
                 <Users size={32} />
               </div>
-              <h1 className="text-5xl sm:text-6xl font-display font-black text-slate-900 leading-none uppercase tracking-tighter">
+              <h1 className="text-3xl sm:text-6xl font-display font-black text-slate-900 leading-none uppercase tracking-tighter">
                 Espace <br /><span className="text-primary italic">Communautaire</span>
               </h1>
             </div>
@@ -235,7 +233,7 @@ export default function Community() {
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                   key={course.id}
-                  className="bg-white p-10 rounded-[3rem] border border-slate-100 hover:border-primary/20 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] transition-all duration-500 group"
+                  className="bg-white p-6 sm:p-10 rounded-[2.5rem] sm:rounded-[3rem] border border-slate-100 hover:border-primary/20 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] transition-all duration-500 group"
                 >
                   <div className="flex items-center justify-between mb-8">
                     <span className="px-4 py-1.5 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase tracking-widest">
@@ -318,14 +316,14 @@ export default function Community() {
             <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xl">
               <motion.div 
                 initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-                className="relative w-full max-w-2xl bg-white rounded-[4rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] p-12 overflow-y-auto max-h-[90vh]"
+                className="relative w-full max-w-2xl bg-white rounded-[2.5rem] sm:rounded-[4rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] p-8 sm:p-12 overflow-y-auto max-h-[90vh]"
               >
-                <button onClick={() => setShowAddModal(false)} className="absolute top-10 right-10 p-2 text-slate-300 hover:text-slate-900 transition-colors">
-                  <X size={32} />
+                <button onClick={() => setShowAddModal(false)} className="absolute top-6 right-6 sm:top-10 sm:right-10 p-2 text-slate-300 hover:text-slate-900 transition-colors z-20">
+                  <X size={28} className="sm:size-8" />
                 </button>
 
-                <div className="text-center mb-10">
-                   <h2 className="text-4xl font-display font-black text-slate-900 uppercase tracking-tighter">Partager {activeTab === "courses" ? "une ressource" : "un document"}</h2>
+                <div className="text-center mb-8">
+                   <h2 className="text-2xl sm:text-4xl font-display font-black text-slate-900 uppercase tracking-tighter">Partager {activeTab === "courses" ? "une ressource" : "un document"}</h2>
                    <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-2 italic">Diffusion de savoir académique</p>
                 </div>
 

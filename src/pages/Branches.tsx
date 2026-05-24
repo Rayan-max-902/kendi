@@ -84,7 +84,7 @@ export default function Branches() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-6xl sm:text-8xl font-display font-black text-slate-900 mb-8 uppercase tracking-tighter leading-none"
+            className="text-4xl sm:text-8xl font-display font-black text-slate-900 mb-8 uppercase tracking-tighter leading-none"
           >
             Nos <span className="text-primary italic">Filières</span>
           </motion.h1>
@@ -138,7 +138,7 @@ export default function Branches() {
                       branch.id === "ia" ? "bg-primary/10 text-primary border-primary/20" : branch.lightColor + " " + branch.textColor + " border-current/20")}>
                       Domaine {i + 1}
                     </div>
-                    <h2 className="text-4xl sm:text-6xl font-display font-black text-slate-900 mb-8 uppercase tracking-tight leading-none">{branch.title}</h2>
+                    <h2 className="text-3xl sm:text-6xl font-display font-black text-slate-900 mb-8 uppercase tracking-tight leading-none">{branch.title}</h2>
                     <p className="text-slate-600 mb-12 text-xl leading-relaxed font-medium">{branch.desc}</p>
                     
                     <div className="flex flex-wrap gap-4 justify-center lg:justify-start mb-8">
@@ -175,13 +175,13 @@ export default function Branches() {
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl">
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-[4rem] p-12 sm:p-20 w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-2xl"
+              className="bg-white rounded-[2.5rem] sm:rounded-[4rem] p-8 sm:p-20 w-full max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-2xl"
             >
               <button 
                 onClick={() => setShowDetailModal(false)}
-                className="absolute top-10 right-10 p-3 text-slate-300 hover:text-slate-900 transition-colors"
+                className="absolute top-6 right-6 sm:top-10 sm:right-10 p-3 text-slate-300 hover:text-slate-900 transition-colors z-20"
               >
-                <X size={32} />
+                <X size={28} className="sm:size-8" />
               </button>
 
               <div className="flex flex-col md:flex-row gap-16 items-start">
@@ -217,7 +217,7 @@ export default function Branches() {
                           <Users size={24} />
                           <h4 className="font-black uppercase tracking-widest text-[10px]">Effectif Scolaire</h4>
                         </div>
-                        <div className="text-6xl font-display font-black leading-none mb-2">
+                        <div className="text-4xl sm:text-6xl font-display font-black leading-none mb-2">
                           {currentBranch.studentsCount}
                         </div>
                         <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Étudiants Actifs</span>

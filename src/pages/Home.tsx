@@ -142,7 +142,7 @@ export default function Home() {
               <Rocket size={16} className="animate-pulse" />
               L'avenir commence ici
             </div>
-            <h1 className="text-5xl sm:text-7xl lg:text-[100px] font-display font-black text-slate-900 leading-[0.95] mb-8 drop-shadow-2xl tracking-tighter uppercase whitespace-pre-line">
+            <h1 className="text-4xl sm:text-7xl lg:text-[100px] font-display font-black text-slate-900 leading-[1.1] sm:leading-[0.95] mb-6 sm:mb-8 drop-shadow-2xl tracking-tighter uppercase whitespace-pre-line">
               <StretchedText text="Association des" /> <br /> 
               <StretchedText text="Jeunes" /> <span className="text-primary italic inline-block"><StretchedText text="Al Kendi" /></span>
             </h1>
@@ -183,7 +183,7 @@ export default function Home() {
       {/* Stats Section - New Style */}
       <section className="py-24 bg-slate-50 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center lg:text-left">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 text-center lg:text-left">
             {[
               { label: "Membres Actifs", val: "+500" },
               { label: "Cours Partagés", val: "+1200" },
@@ -205,7 +205,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-end gap-10 mb-20 text-left">
             <div className="max-w-2xl">
               <div className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-4 text-left">Actualités</div>
-              <h2 className="text-5xl font-display font-black leading-none uppercase tracking-tighter text-slate-900">
+              <h2 className="text-3xl sm:text-5xl font-display font-black leading-tight sm:leading-none uppercase tracking-tighter text-slate-900">
                 Nos Dernières <br /> <span className="text-primary italic">Annonces</span>
               </h2>
             </div>
@@ -325,7 +325,7 @@ export default function Home() {
             <div className="space-y-10">
               <div>
                 <div className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-4">À Propos de Nous</div>
-                <h2 className="text-5xl font-display font-black text-slate-900 leading-none uppercase tracking-tighter mb-8">
+                <h2 className="text-3xl sm:text-5xl font-display font-black text-slate-900 leading-tight sm:leading-none uppercase tracking-tighter mb-6 sm:mb-8">
                   Une Vision <br /> Pour L'Avenir <br /> <span className="text-primary italic">Informatique</span>
                 </h2>
                 <p className="text-slate-600 text-lg leading-relaxed mb-6">
@@ -375,7 +375,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-end gap-10 mb-20 text-left">
             <div className="max-w-2xl">
               <div className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-4 text-left">Nos Domaines</div>
-              <h2 className="text-5xl font-display font-black leading-none uppercase tracking-tighter">
+              <h2 className="text-3xl sm:text-5xl font-display font-black leading-tight sm:leading-none uppercase tracking-tighter">
                 L'Expertise au Service <br /> de votre <span className="text-primary italic">Ambition</span>
               </h2>
             </div>
@@ -397,7 +397,7 @@ export default function Home() {
               <div className="h-0.5 w-0 group-hover:w-full bg-primary transition-all duration-500" />
             </PerspectiveCard>
 
-            <PerspectiveCard className="group p-10 bg-primary rounded-[2.5rem] shadow-2xl shadow-primary/20 transition-all">
+            <PerspectiveCard className="group p-10 bg-secondary rounded-[2.5rem] shadow-2xl shadow-secondary/20 transition-all">
               <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-white mb-8">
                 <Code size={36} />
               </div>
@@ -439,7 +439,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-24">
             <div className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-4">Témoignages</div>
-            <h2 className="text-5xl font-display font-black text-slate-900 leading-none uppercase tracking-tighter">
+            <h2 className="text-3xl sm:text-5xl font-display font-black text-slate-900 leading-tight sm:leading-none uppercase tracking-tighter">
               Ce que nos membres <br /> <span className="text-primary italic">disent de nous</span>
             </h2>
           </div>
@@ -548,7 +548,7 @@ export default function Home() {
       <section className="py-32 bg-white relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-5xl font-display font-black text-slate-900 uppercase tracking-tighter">
+            <h2 className="text-2xl sm:text-5xl font-display font-black text-slate-900 uppercase tracking-tighter">
               Questions Fréquemment Posées
             </h2>
           </div>

@@ -135,9 +135,7 @@ export default function Admin() {
   };
 
   const handleDeletePartner = async (id: string) => {
-    if (window.confirm("Supprimer ce partenaire ?")) {
-      await deleteDoc(doc(db, "partners", id));
-    }
+    alert("🔒 Cet élément est hautement protégé. Toutes les données de l'association (partenaires, articles, témoignages, cours, documents) sont configurées comme étant permanentes et insupprimables pour préserver l'historique complet de l'Association Al Kendi l'IA.");
   };
 
   const handleAddAnnouncement = async (e: React.FormEvent) => {
@@ -219,34 +217,19 @@ export default function Admin() {
   };
 
   const handleDeleteAnnouncement = async (id: string) => {
-    if (!id) return;
-    if (window.confirm("Supprimer cette annonce ?")) {
-      try {
-        await deleteDoc(doc(db, "announcements", id));
-        alert("Annonce supprimée !");
-      } catch (err) {
-        console.error("Error deleting announcement:", err);
-        alert("Erreur lors de la suppression : " + (err instanceof Error ? err.message : String(err)));
-      }
-    }
+    alert("🔒 Les articles et annonces sont configurés comme étant permanents et insupprimables pour conserver l'historique complet de l'Association Al Kendi l'IA.");
   };
 
   const handleDeleteTestimonial = async (id: string) => {
-    if (window.confirm("Supprimer ce témoignage ?")) {
-      await deleteDoc(doc(db, "testimonials", id));
-    }
+    alert("🔒 Les témoignages sont configurés comme étant permanents et insupprimables pour conserver l'historique complet de l'Association Al Kendi l'IA.");
   };
 
   const handleDeleteCourse = async (id: string) => {
-    if (window.confirm("Supprimer cette ressource ?")) {
-      await deleteDoc(doc(db, "courses", id));
-    }
+    alert("🔒 Les cours et ressources partagés sont configurés comme étant permanents et insupprimables pour conserver l'historique complet de l'Association Al Kendi l'IA.");
   };
 
   const handleDeleteDoc = async (id: string) => {
-    if (window.confirm("Supprimer ce document ?")) {
-      await deleteDoc(doc(db, "community_documents", id));
-    }
+    alert("🔒 Les documents partagés sont configurés comme étant permanents et insupprimables pour conserver l'historique complet de l'Association Al Kendi l'IA.");
   };
 
   return (

@@ -5,8 +5,10 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Plus Jakarta Sans", sans-serif;
   --font-special: "Cherry Bomb One", system-ui;
-  --color-primary: #ec1c24;
-  --color-primary-hover: #c9181f;
+  --color-primary: #0054A6;
+  --color-primary-hover: #00458a;
+  --color-secondary: #00A651;
+  --color-secondary-hover: #008a44;
   --animate-marquee: marquee 40s linear infinite;
 }
 
@@ -46,12 +48,12 @@
 
 @keyframes resonate {
   0%, 100% { transform: scale(1); filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.1)); }
-  50% { transform: scale(1.1); filter: drop-shadow(0 0 60px rgba(236,28,36,0.6)); }
+  50% { transform: scale(1.1); filter: drop-shadow(0 0 60px rgba(0, 84, 166, 0.6)); }
 }
 
 .title-3d {
   font-family: var(--font-special);
-  color: #ec1c24;
+  color: #0054A6;
   paint-order: stroke fill;
   filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.1));
   display: inline-block;
