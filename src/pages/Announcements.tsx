@@ -4,6 +4,7 @@ import { Bell, Calendar, ChevronRight, Trash2 } from "lucide-react";
 import { db } from "../lib/firebase";
 import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 import { useAuth } from "../lib/AuthContext";
+import { useTranslation } from "../lib/LanguageContext";
 
 interface Announcement {
   id: string;
@@ -19,6 +20,7 @@ interface Announcement {
 
 export default function Announcements() {
   const { user } = useAuth();
+  const { t, language } = useTranslation();
   const isAdmin = user && (user.uid === "448tPJFMzCX1Tiz6mWo1h4Y3ImZ2" || (user.email && ["moatadidrayan7@gmail.com", "elmoatadiderayan@gmail.com"].includes(user.email.toLowerCase())));
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,20 +38,34 @@ export default function Announcements() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    alert("🔒 Les articles et annonces sont précieux pour l'association et sont configurés comme permanents et insupprimables.");
+    const alertMsg = language === "ar" 
+      ? "🔒 هذه المقالات والإعلانات ثمينة جداً وتعتبر سجلاً دائماً لشباب الكندي ومحمية من الحذف." 
+      : language === "en" 
+      ? "🔒 This news and articles are precious and configured as permanent and non-deletable." 
+      : "🔒 Les articles et annonces sont précieux pour l'association et sont configurés comme permanents et insupprimables.";
+    alert(alertMsg);
   };
 
   return (
     <div className="py-32 bg-white min-h-screen">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <header className="mb-24">
+        <header className="mb-24 text-left">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
               <Bell size={32} />
             </div>
-            <h1 className="text-3xl sm:text-6xl font-display font-black text-slate-900 leading-none uppercase tracking-tighter">Journal & <br /> <span className="text-primary italic">Actualités</span></h1>
+            <h1 className="text-3xl sm:text-6xl font-display font-black text-slate-900 leading-none uppercase tracking-tighter">
+              {language === "ar" ? "سـجل" : language === "en" ? "Journal" : "Journal"} & <br /> 
+              <span className="text-primary italic">{language === "ar" ? "المستجدات والأخبار" : language === "en" ? "News" : "Actualités"}</span>
+            </h1>
           </div>
-          <p className="text-slate-500 text-xl font-medium uppercase tracking-tight">Vivez les moments forts de l'Association Al Kendi au quotidien.</p>
+          <p className="text-slate-500 text-xl font-medium uppercase tracking-tight">
+            {language === "ar" 
+              ? "تعرّفْ على أقوى الأحداث وفعالياتِ جمعيةِ شباب الكندي خطوة بخطوة." 
+              : language === "en" 
+              ? "Live the defining moments of the Al Kendi youth association daily." 
+              : "Vivez les moments forts de l'Association Al Kendi au quotidien."}
+          </p>
         </header>
 
         {loading ? (
@@ -67,20 +83,20 @@ export default function Announcements() {
                 transition={{ delay: i * 0.1 }}
                 className="group relative bg-slate-50 rounded-[2.5rem] sm:rounded-[3rem] p-6 sm:p-14 border border-slate-100 hover:bg-white hover:shadow-2xl transition-all duration-500 overflow-hidden"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-8 mb-10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-8 mb-10 text-left">
                   <div className="flex flex-wrap items-center gap-4">
                     <span className="px-5 py-2 bg-primary text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg shadow-primary/20">
                       {ann.category}
                     </span>
                     <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest">
                       <Calendar size={14} className="text-primary" />
-                      {new Date(ann.date).toLocaleDateString("fr-FR", { day: 'numeric', month: 'long', year: 'numeric' })}
+                      {new Date(ann.date).toLocaleDateString(language === "ar" ? "ar-EG" : language === "en" ? "en-US" : "fr-FR", { day: 'numeric', month: 'long', year: 'numeric' })}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     {ann.author && (
                       <div className="text-[10px] font-black text-primary uppercase tracking-widest border-b-2 border-primary/20 pb-1">
-                        Réalisé par : {ann.author}
+                        {language === "ar" ? "تأليف وكتابة :" : language === "en" ? "Written by :" : "Réalisé par :"} {ann.author}
                       </div>
                     )}
                     {isAdmin && (
@@ -98,11 +114,11 @@ export default function Announcements() {
                   </div>
                 </div>
                 
-                <h2 className="text-3xl sm:text-4xl font-display font-black text-slate-900 group-hover:text-primary transition-colors mb-8 leading-tight uppercase tracking-tight">
+                <h2 className="text-3xl sm:text-4xl font-display font-black text-slate-900 group-hover:text-primary transition-colors mb-8 leading-tight uppercase tracking-tight text-left">
                   {ann.title}
                 </h2>
 
-                <div className="prose prose-slate max-w-none">
+                <div className="prose prose-slate max-w-none text-left">
                   <p className="text-slate-600 text-lg sm:text-xl leading-relaxed font-medium">
                     {ann.content}
                   </p>
@@ -111,10 +127,10 @@ export default function Announcements() {
                 <AnimatePresence>
                   {expandedId === ann.id && (
                     <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
+                       initial={{ height: 0, opacity: 0 }}
+                       animate={{ height: "auto", opacity: 1 }}
+                       exit={{ height: 0, opacity: 0 }}
+                       className="overflow-hidden"
                     >
                       <div className="mt-12 space-y-12">
                         {ann.images && ann.images.length > 0 && (
@@ -154,9 +170,11 @@ export default function Announcements() {
                   className="w-full mt-12 pt-10 border-t border-slate-100 flex items-center justify-between group/btn"
                 >
                    <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] group-hover/btn:text-primary transition-colors">
-                     {expandedId === ann.id ? "Réduire les détails" : "Communiqué Officiel Al Kendi"}
+                     {expandedId === ann.id 
+                       ? (language === "ar" ? "ضم التفاصيل وإخفاؤها" : language === "en" ? "Collapse details" : "Réduire les détails") 
+                       : (language === "ar" ? "البيان الرسمي لجمعية الكندي" : language === "en" ? "Official Al Kendi Communiqué" : "Communiqué Officiel Al Kendi")}
                    </div>
-                   <ChevronRight className={`text-primary transition-transform duration-300 ${expandedId === ann.id ? "rotate-90" : "group-hover/btn:translate-x-3"}`} size={24} />
+                   <ChevronRight className={`text-primary transition-transform duration-300 ${expandedId === ann.id ? "rotate-90" : "group-hover/btn:translate-x-3"} ${language === "ar" && expandedId !== ann.id ? "rotate-180 group-hover/btn:-translate-x-3" : ""}`} size={24} />
                 </button>
               </motion.div>
             ))}

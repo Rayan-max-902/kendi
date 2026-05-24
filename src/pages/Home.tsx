@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight, BookOpen, UserCheck, ShieldCheck, Cpu, Code, PieChart, Bell, Calendar, Video, Star, Quote, ChevronDown, ChevronUp, Bot, Image as ImageIcon } from "lucide-react";
 import { collection, query, orderBy, limit, onSnapshot, doc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { cn } from "../lib/utils";
+import { useTranslation } from "../lib/LanguageContext";
 
 const HERO_IMG = "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop";
 
@@ -32,6 +34,7 @@ export default function Home() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [newOpinion, setNewOpinion] = useState({ name: "", rating: 5, comment: "" });
   const [submittingOpinion, setSubmittingOpinion] = useState(false);
+  const { t, language } = useTranslation();
 
   useEffect(() => {
     // Announcements
@@ -140,14 +143,18 @@ export default function Home() {
           >
             <div className="mb-8 inline-flex items-center gap-3 px-5 py-2 rounded-full bg-primary/10 text-primary font-bold text-sm uppercase tracking-[0.2em] backdrop-blur-md border border-primary/20">
               <Rocket size={16} className="animate-pulse" />
-              L'avenir commence ici
+              {t("hero_badge")}
             </div>
             <h1 className="text-4xl sm:text-7xl lg:text-[100px] font-display font-black text-slate-900 leading-[1.1] sm:leading-[0.95] mb-6 sm:mb-8 drop-shadow-2xl tracking-tighter uppercase whitespace-pre-line">
-              <StretchedText text="Association des" /> <br /> 
-              <StretchedText text="Jeunes" /> <span className="text-primary italic inline-block"><StretchedText text="Al Kendi" /></span>
+              <StretchedText text={t("hero_title_1")} /> <br /> 
+              <StretchedText text={t("hero_title_2")} /> <span className="text-primary italic inline-block"><StretchedText text={t("hero_title_3")} /></span>
             </h1>
             <p className="text-xl sm:text-2xl text-slate-800 font-medium mb-12 max-w-2xl mx-auto leading-relaxed">
-              Rejoignez une communauté dynamique d'étudiants passionnés par le développement, l'informatique et la gestion. 
+              {language === "ar" 
+                ? "انضموا إلى مجتمع طلابي حيوي وشغوف بالبرمجة والتطوير، تكنولوجيا المعلومات، والتسيير الإداري والمالي." 
+                : language === "en" 
+                ? "Join a dynamic community of students passionate about development, computer science, and management." 
+                : "Rejoignez une communauté dynamique d'étudiants passionnés par le développement, l'informatique et la gestion."}
             </p>
             
             <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-6">
@@ -155,8 +162,8 @@ export default function Home() {
                 to="/signup"
                 className="px-12 py-5 bg-primary hover:bg-primary-hover text-white rounded-xl font-black shadow-2xl shadow-primary/30 transition-all hover:scale-105 flex items-center justify-center gap-3 uppercase tracking-wider text-lg"
               >
-                Rejoindre la Communauté
-                <ArrowRight size={24} />
+                {t("community_btn")}
+                <ArrowRight size={24} className={language === "ar" ? "rotate-180" : ""} />
               </Link>
               <button 
                 onClick={() => {
@@ -166,7 +173,7 @@ export default function Home() {
                 className="px-10 py-5 bg-slate-900 border-2 border-slate-900 text-white rounded-xl font-black transition-all hover:bg-slate-800 flex items-center justify-center gap-3 uppercase tracking-wider text-lg"
               >
                 <Bot size={24} className="text-primary" />
-                Interroger l'IA
+                {t("interrogate_ai")}
               </button>
             </div>
           </motion.div>
@@ -185,10 +192,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 text-center lg:text-left">
             {[
-              { label: "Membres Actifs", val: "+500" },
-              { label: "Cours Partagés", val: "+1200" },
-              { label: "Ateliers Organisés", val: "+45" },
-              { label: "Partenaires", val: "+12" }
+              { label: t("stats_members"), val: "+500" },
+              { label: t("stats_courses"), val: "+1200" },
+              { label: language === "ar" ? "ورشات عمل منظمة" : language === "en" ? "Workshops Organized" : "Ateliers Organisés", val: "+45" },
+              { label: language === "ar" ? "شركاء رسميون" : language === "en" ? "Official Partners" : "Partenaires", val: "+12" }
             ].map((stat, i) => (
               <div key={i} className="space-y-2">
                 <div className="text-5xl font-display font-black text-slate-900 uppercase tracking-tighter">{stat.val}</div>
@@ -204,16 +211,16 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-end gap-10 mb-20 text-left">
             <div className="max-w-2xl">
-              <div className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-4 text-left">Actualités</div>
+              <div className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-4 text-left">{t("news_tag")}</div>
               <h2 className="text-3xl sm:text-5xl font-display font-black leading-tight sm:leading-none uppercase tracking-tighter text-slate-900">
-                Nos Dernières <br /> <span className="text-primary italic">Annonces</span>
+                {t("news_title_1")} <br /> <span className="text-primary italic">{t("news_title_2")}</span>
               </h2>
             </div>
             <Link 
               to="/announcements"
               className="px-8 py-3 border border-slate-200 hover:border-primary hover:bg-primary hover:text-white rounded-xl font-bold transition-all uppercase tracking-widest text-sm text-slate-600"
             >
-              Voir tout le journal <ArrowRight size={16} className="inline ml-2" />
+              {language === "ar" ? "عرض السجلات كاملة" : language === "en" ? "View all announcements" : "Voir tout le journal"} <ArrowRight size={16} className={cn("inline ml-2", language === "ar" ? "rotate-180" : "")} />
             </Link>
           </div>
 
@@ -250,7 +257,7 @@ export default function Home() {
                   <div className="p-8 flex flex-col flex-grow">
                     <div className="flex items-center gap-2 text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-4">
                       <Calendar size={12} className="text-primary" />
-                      {new Date(ann.date).toLocaleDateString("fr-FR")}
+                      {new Date(ann.date).toLocaleDateString(language === "ar" ? "ar-EG" : language === "en" ? "en-US" : "fr-FR")}
                     </div>
                     <h3 className="text-xl font-display font-black text-slate-900 uppercase tracking-tight mb-4 line-clamp-2 group-hover:text-primary transition-colors">
                       {ann.title}
@@ -262,7 +269,7 @@ export default function Home() {
                       to="/announcements" 
                       className="mt-auto inline-flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-widest hover:gap-4 transition-all"
                     >
-                      Lire la suite <ArrowRight size={14} />
+                      {language === "ar" ? "اقرأ المزيد" : language === "en" ? "Read more" : "Lire la suite"} <ArrowRight size={14} className={language === "ar" ? "rotate-180" : ""} />
                     </Link>
                   </div>
                 </motion.div>
@@ -270,7 +277,9 @@ export default function Home() {
             ) : (
               <div className="col-span-full py-20 text-center border-2 border-dashed border-slate-100 rounded-[3rem]">
                 <Bell className="mx-auto text-slate-200 mb-4" size={48} />
-                <p className="font-bold text-slate-400">Aucune annonce récente</p>
+                <p className="font-bold text-slate-400">
+                  {language === "ar" ? "لا توجد أي إعانات أو مستجدات حالياً" : language === "en" ? "No recent announcements" : "Aucune annonce récente"}
+                </p>
               </div>
             )}
           </div>
@@ -324,21 +333,33 @@ export default function Home() {
             
             <div className="space-y-10">
               <div>
-                <div className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-4">À Propos de Nous</div>
+                <div className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-4">{t("about_tag")}</div>
                 <h2 className="text-3xl sm:text-5xl font-display font-black text-slate-900 leading-tight sm:leading-none uppercase tracking-tighter mb-6 sm:mb-8">
-                  Une Vision <br /> Pour L'Avenir <br /> <span className="text-primary italic">Informatique</span>
+                  {t("about_title_1")} <br /> {t("about_title_2")} <br /> <span className="text-primary italic">{t("about_title_3")}</span>
                 </h2>
                 <p className="text-slate-600 text-lg leading-relaxed mb-6">
-                  L'Association des Jeunes Al Kendi n'est pas seulement un club étudiant. C'est un véritable écosystème d'innovation où se rencontrent les futurs leaders de la technologie au Maroc.
+                  {language === "ar" 
+                    ? "جمعية شباب الكندي ليست مجرد نادٍ طلابي عابر؛ بل هي بيئة ريادية متكاملة للإبداع والابتكار حيث يلتقي قادة التكنولوجيا ومحترفو الإدارة والتسيير المالي للغد." 
+                    : language === "en" 
+                    ? "The Al Kendi Youth Association is not just a student club. It is a genuine innovation ecosystem where future leaders of technology and finance assemble." 
+                    : "L'Association des Jeunes Al Kendi n'est pas seulement un club étudiant. C'est un véritable écosystème d'innovation où se rencontrent les futurs leaders de la technologie."}
                 </p>
                 <div className="grid sm:grid-cols-2 gap-8 py-8 border-y border-slate-100">
                   <div>
-                    <h4 className="font-bold text-slate-900 mb-2">Qualité & Excellence</h4>
-                    <p className="text-sm text-slate-500">Un standard élevé pour toutes nos formations et événements.</p>
+                    <h4 className="font-bold text-slate-900 mb-2">
+                      {language === "ar" ? "الجودة والتميز" : language === "en" ? "Quality & Excellence" : "Qualité & Excellence"}
+                    </h4>
+                    <p className="text-sm text-slate-500">
+                      {language === "ar" ? "نسعى لتقديم أعلى مستوى ممكن في ورشاتنا الأكاديمية والعملية." : language === "en" ? "High standard for all of our specialized workshops." : "Un standard élevé pour toutes nos formations et événements."}
+                    </p>
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 mb-2">Innovation Continue</h4>
-                    <p className="text-sm text-slate-500">Toujours à l'affût des dernières technologies et tendances du marché.</p>
+                    <h4 className="font-bold text-slate-900 mb-2">
+                      {language === "ar" ? "الابتكار الرقمي" : language === "en" ? "Continuous Innovation" : "Innovation Continue"}
+                    </h4>
+                    <p className="text-sm text-slate-500">
+                      {language === "ar" ? "مواكبة سريعة ومستمرة لأحدث الأدوات التكنولوجية والذكية." : language === "en" ? "Constantly tracking the latest emerging tech and tools." : "Toujours à l'affût des dernières technologies et tendances du marché."}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -346,9 +367,9 @@ export default function Home() {
                 to="/branches"
                 className="inline-flex items-center gap-4 text-primary font-black uppercase tracking-widest group"
               >
-                En savoir plus sur nos missions
-                <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center group-hover:translate-x-2 transition-transform">
-                  <ArrowRight size={20} />
+                {language === "ar" ? "اكتشف تخصصاتنا ومهمتنا" : language === "en" ? "Learn more about our branches" : "En savoir plus sur nos missions"}
+                <div className={cn("w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center transition-transform", language === "ar" ? "group-hover:-translate-x-2" : "group-hover:translate-x-2")}>
+                  <ArrowRight size={20} className={language === "ar" ? "rotate-180" : ""} />
                 </div>
               </Link>
             </div>
@@ -374,26 +395,30 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-10">
           <div className="flex flex-col md:flex-row justify-between items-end gap-10 mb-20 text-left">
             <div className="max-w-2xl">
-              <div className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-4 text-left">Nos Domaines</div>
+              <div className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-4 text-left">{t("expert_tag")}</div>
               <h2 className="text-3xl sm:text-5xl font-display font-black leading-tight sm:leading-none uppercase tracking-tighter">
-                L'Expertise au Service <br /> de votre <span className="text-primary italic">Ambition</span>
+                {t("expert_title_1")} <br /> {t("expert_title_2")} <span className="text-primary italic">{t("expert_title_3")}</span>
               </h2>
             </div>
             <Link 
               to="/branches"
               className="px-8 py-3 border border-white/20 hover:border-primary hover:bg-primary rounded-xl font-bold transition-all uppercase tracking-widest text-sm"
             >
-              Voir tout <ArrowRight size={16} className="inline ml-2" />
+              {language === "ar" ? "عرض التفاصيل" : language === "en" ? "View all" : "Voir tout"} <ArrowRight size={16} className={cn("inline ml-2", language === "ar" ? "rotate-180" : "")} />
             </Link>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 text-left">
             <PerspectiveCard className="group p-10 bg-slate-800/50 rounded-[2.5rem] border border-white/10 hover:border-primary/50 transition-all">
               <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white mb-8 group-hover:bg-primary transition-colors">
                 <Cpu size={36} />
               </div>
-              <h3 className="text-2xl font-display font-black uppercase tracking-tight mb-4 leading-none">Développement <br /> de l'IA</h3>
-              <p className="text-slate-400 mb-8 leading-relaxed">Conception d'algorithmes intelligents et intégration de modèles de Machine Learning.</p>
+              <h3 className="text-2xl font-display font-black uppercase tracking-tight mb-4 leading-none">
+                {language === "ar" ? "تطوير برمجيات" : language === "en" ? "AI & Coding" : "Développement"} <br /> {language === "ar" ? "الذكاء الاصطناعي" : language === "en" ? "Academy" : "de l'IA"}
+              </h3>
+              <p className="text-slate-400 mb-8 leading-relaxed">
+                {language === "ar" ? "تصميم وتجريب خوارزميات الذكاء الاصطناعي وتعلم الآلة عملياً." : language === "en" ? "Designing intelligent algorithms and hands-on Neural Network coding." : "Conception d'algorithmes intelligents et intégration de modèles de Machine Learning."}
+              </p>
               <div className="h-0.5 w-0 group-hover:w-full bg-primary transition-all duration-500" />
             </PerspectiveCard>
 
@@ -401,16 +426,24 @@ export default function Home() {
               <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-white mb-8">
                 <Code size={36} />
               </div>
-              <h3 className="text-2xl font-display font-black uppercase tracking-tight mb-4 leading-none">Développement <br /> AI</h3>
-              <p className="text-white/80 mb-8 leading-relaxed">Cycle complet de développement d'applications innovantes utilisant les APIs d'IA modernes.</p>
+              <h3 className="text-2xl font-display font-black uppercase tracking-tight mb-4 leading-none">
+                {language === "ar" ? "تطوير تطبيقات Web" : language === "en" ? "Fullstack AI" : "Développement AI"} <br /> {language === "ar" ? "باستخدام الذكاء" : language === "en" ? "Engineering" : "Applications"}
+              </h3>
+              <p className="text-white/80 mb-8 leading-relaxed">
+                {language === "ar" ? "تطوير وبناء تطبيقات مبتكرة ومتكاملة لربط تكنولوجيا المعلومات بسوق العمل." : language === "en" ? "Complete cycle development matching web apps with models using state of the art APIs." : "Cycle complet de développement d'applications innovantes utilisant les APIs d'IA modernes."}
+              </p>
             </PerspectiveCard>
 
             <PerspectiveCard className="group p-10 bg-slate-800/50 rounded-[2.5rem] border border-white/10 hover:border-primary/50 transition-all">
               <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white mb-8 group-hover:bg-primary transition-colors">
                 <PieChart size={36} />
               </div>
-              <h3 className="text-2xl font-display font-black uppercase tracking-tight mb-4 leading-none">Comptabilité <br /> et Gestion</h3>
-              <p className="text-slate-400 mb-8 leading-relaxed">Expertise en gestion financière, audit et administration stratégique des entreprises.</p>
+              <h3 className="text-2xl font-display font-black uppercase tracking-tight mb-4 leading-none">
+                {language === "ar" ? "المحاسبة المالية" : language === "en" ? "Finance &" : "Comptabilité"} <br /> {language === "ar" ? "والتدبير الاستراتيجي" : language === "en" ? "Management" : "et Gestion"}
+              </h3>
+              <p className="text-slate-400 mb-8 leading-relaxed">
+                {language === "ar" ? "التحكم الميداني في تدبير الميزانيات، المحاسبة التحليلية، والمراقبة المالية الشاملة." : language === "en" ? "Corporate finance, analytical accounting and strategic business administration." : "Expertise en gestion financière, audit et administration stratégique des entreprises."}
+              </p>
               <div className="h-0.5 w-0 group-hover:w-full bg-primary transition-all duration-500" />
             </PerspectiveCard>
           </div>
@@ -438,9 +471,9 @@ export default function Home() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-24">
-            <div className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-4">Témoignages</div>
+            <div className="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-4">{t("test_tag")}</div>
             <h2 className="text-3xl sm:text-5xl font-display font-black text-slate-900 leading-tight sm:leading-none uppercase tracking-tighter">
-              Ce que nos membres <br /> <span className="text-primary italic">disent de nous</span>
+              {t("test_title_1")} <br /> <span className="text-primary italic">{t("test_title_2")}</span>
             </h2>
           </div>
 
@@ -460,9 +493,9 @@ export default function Home() {
                     <div className="flex gap-1 mb-6">
                       {[...Array(5)].map((_, index) => (
                         <Star 
-                          key={index} 
-                          size={18} 
-                          className={index < t.rating ? "fill-primary text-primary" : "text-slate-200"} 
+                           key={index} 
+                           size={18} 
+                           className={index < t.rating ? "fill-primary text-primary" : "text-slate-200"} 
                         />
                       ))}
                     </div>
@@ -478,7 +511,7 @@ export default function Home() {
               ))
             ) : (
               <div className="col-span-full py-12 text-center text-slate-400 italic font-medium">
-                Aucun avis pour le moment. Soyez le premier !
+                {language === "ar" ? "لا توجد أي تقييمات حالياً. كن أول من يكتب رأيه!" : language === "en" ? "No feedback yet. Be the first to leave one!" : "Aucun avis pour le moment. Soyez le premier !"}
               </div>
             )}
           </div>
@@ -487,22 +520,26 @@ export default function Home() {
             <div className="bg-slate-900 rounded-[3rem] p-10 sm:p-16 border border-white/5 shadow-2xl relative overflow-hidden text-white">
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
               <div className="relative z-10">
-                <h3 className="text-3xl font-display font-black mb-10 text-center uppercase tracking-tight">Prêt à Partager votre Expérience ?</h3>
-                <form onSubmit={handleAddOpinion} className="space-y-8">
+                <h3 className="text-3xl font-display font-black mb-10 text-center uppercase tracking-tight">
+                  {language === "ar" ? "جاهز لمشاركة تجربتك معنا؟" : language === "en" ? "Ready to Share Your Experience?" : "Prêt à Partager votre Expérience ?"}
+                </h3>
+                <form onSubmit={handleAddOpinion} className="space-y-8 text-left">
                   <div className="grid sm:grid-cols-2 gap-8">
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom Complet</label>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t("auth_fullname")}</label>
                       <input 
                         type="text" 
                         required
                         value={newOpinion.name}
                         onChange={(e) => setNewOpinion(prev => ({ ...prev, name: e.target.value }))}
                         className="w-full px-6 py-5 bg-white/5 rounded-2xl border-2 border-white/10 focus:border-primary outline-none transition-all placeholder:text-slate-600 font-bold text-white shadow-inner"
-                        placeholder="Votre nom..."
+                        placeholder={language === "ar" ? "اكتب اسمك ..." : language === "en" ? "Your name..." : "Votre nom..."}
                       />
                     </div>
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 text-center block">Note Globale</label>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 text-center block">
+                        {language === "ar" ? "التقييم العام" : language === "en" ? "Overall Note" : "Note Globale"}
+                      </label>
                       <div className="flex items-center justify-center gap-3 h-[68px]">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
@@ -521,14 +558,16 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Votre Message</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                      {language === "ar" ? "رسالتكم" : language === "en" ? "Your Message" : "Votre Message"}
+                    </label>
                     <textarea 
                       required
                       value={newOpinion.comment}
                       onChange={(e) => setNewOpinion(prev => ({ ...prev, comment: e.target.value }))}
                       rows={4}
                       className="w-full px-6 py-5 bg-white/5 rounded-2xl border-2 border-white/10 focus:border-primary outline-none transition-all placeholder:text-slate-600 font-bold text-white shadow-inner resize-none"
-                      placeholder="Comment l'association vous a-t-elle aidé ?"
+                      placeholder={language === "ar" ? "ما الفائدة التي لمستها من خدماتنا؟" : language === "en" ? "How did the association help you?" : "Comment l'association vous a-t-elle aidé ?"}
                     />
                   </div>
                   <button 
@@ -536,7 +575,9 @@ export default function Home() {
                     disabled={submittingOpinion}
                     className="w-full py-5 bg-primary hover:bg-primary-hover text-white rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/40 transition-all hover:scale-[1.02] active:scale-98 disabled:opacity-50"
                   >
-                    {submittingOpinion ? "Envoi..." : "Envoyer mon témoignage"}
+                    {submittingOpinion 
+                      ? (language === "ar" ? "جاري الإرسال ..." : language === "en" ? "Sending..." : "Envoi...") 
+                      : (language === "ar" ? "إرسال تعليقي الآن" : language === "en" ? "Submit Feedback" : "Envoyer mon témoignage")}
                   </button>
                 </form>
               </div>
@@ -547,29 +588,61 @@ export default function Home() {
         {/* FAQ Section */}
       <section className="py-32 bg-white relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
+          <div className="text-center mb-20 border-b border-slate-100 pb-8">
             <h2 className="text-2xl sm:text-5xl font-display font-black text-slate-900 uppercase tracking-tighter">
-              Questions Fréquemment Posées
+              {t("faq_title")}
             </h2>
           </div>
 
           <div className="space-y-4">
             {[
               {
-                question: "Quels services propose l'Association Al Kendi ?",
-                answer: "En tant qu'association spécialisée dans l'accompagnement étudiant, nous proposons des cours de soutien, des ateliers techniques en IA et développement, ainsi que des séminaires de gestion et comptabilité pour préparer nos membres au marché du travail."
+                question: language === "ar" 
+                  ? "ما هي الخدمات التي تقدمها جمعية الكندي؟" 
+                  : language === "en" 
+                  ? "What services does Al Kendi Association propose?" 
+                  : "Quels services propose l'Association Al Kendi ?",
+                answer: language === "ar" 
+                  ? "بصفتنا جمعية طلابية متخصصة ومسؤولة، نقدم دروس دعم وتوجيه وأكاديميات تكوين في الذكاء الاصطناعي والبرمجة والمحاسبة المالية وتدبير المقاولات." 
+                  : language === "en" 
+                  ? "As a specialized student organization, we offer academic tutoring, coding & AI hands-on workshops, and management/accounting seminars." 
+                  : "En tant qu'association spécialisée dans l'accompagnement d'excellence, nous proposons des cours de soutien, des ateliers en IA et codage, ainsi que des séminaires de gestion."
               },
               {
-                question: "Comment rejoindre l'association ?",
-                answer: "L'inscription se fait directement via notre plateforme. Cliquez sur 'Rejoindre la Communauté', remplissez vos informations et notre équipe examinera votre demande sous 48h."
+                question: language === "ar" 
+                  ? "كيف يمكنني الانضمام إلى الجمعية ومجموعاتنا؟" 
+                  : language === "en" 
+                  ? "How do I register or join the association?" 
+                  : "Comment rejoindre l'association ?",
+                answer: language === "ar" 
+                  ? "التسجيل سهل ومباشر عبر البوابة الرسمية! اضغط على زر 'الانضمام للمجتمع' واملأ استمارة البيانات الخاصة بك لتتم مراجعتها." 
+                  : language === "en" 
+                  ? "Registration is done directly on our site. Click 'Join Community' in the header to submit your student registration form." 
+                  : "L'inscription se fait directement via notre plateforme. Cliquez sur 'Rejoindre la Communauté', remplissez le formulaire d'adhésion."
               },
               {
-                question: "L'association est-elle ouverte aux débutants ?",
-                answer: "Absolument. Nous accueillons tous les niveaux. Nos programmes sont conçus pour faire monter en compétence aussi bien les débutants que les profils plus expérimentés."
+                question: language === "ar" 
+                  ? "هل تقبل الجمعية المبتدئين تماماً؟" 
+                  : language === "en" 
+                  ? "Is the association friendly to absolute beginners?" 
+                  : "L'association est-elle ouverte aux débutants ?",
+                answer: language === "ar" 
+                  ? "بالتأكيد! نرحب بجميع المستويات والمسارات. برامجنا التكوينية مصممة خطوة بخطوة لمواكبة المبتدئين والمطورين المتمرسين على حد سواء." 
+                  : language === "en" 
+                  ? "Absolutely. We welcome all skills and career levels. Our programs are engineered to step-by-step advance beginners." 
+                  : "Absolument. Nous accueillons tous les niveaux. Nos programmes sont conçus pour faire monter en compétence aussi bien les débutants."
               },
               {
-                question: "Y a-t-il des frais d'adhésion ?",
-                answer: "L'adhésion à Al Kendi est gratuite pour les étudiants. Seuls certains événements spéciaux ou certifications externes peuvent nécessiter une participation aux frais."
+                question: language === "ar" 
+                  ? "هل هناك أي رسوم مادية للتسجيل والاشتراك؟" 
+                  : language === "en" 
+                  ? "Are there any membership fees?" 
+                  : "Y a-t-il des frais d'adhésion ?",
+                answer: language === "ar" 
+                  ? "الاشتراك والعضوية الأساسية في جمعية الكندي مجانية تماماً للطلبة. ورشاتنا العامة ودوراتنا مفتوحة ومجانية طوال العام الدراسي." 
+                  : language === "en" 
+                  ? "Membership in Al Kendi is completely free for college students. Most events, bootcamps and certifications are free as well." 
+                  : "L'adhésion à Al Kendi est gratuite pour les étudiants. Seuls certains événements d'accréditation externes peuvent nécessiter des frais."
               }
             ].map((item, idx) => (
               <FaqItem key={idx} question={item.question} answer={item.answer} />
@@ -664,8 +737,31 @@ function PerspectiveCard({ children, className }: { children: React.ReactNode; c
 }
 
 function StretchedText({ text }: { text: string }) {
+  const isArabic = /[\u0600-\u06FF]/.test(text);
+
+  if (isArabic) {
+    const words = text.split(" ");
+    return (
+      <span className="inline-flex flex-wrap justify-center gap-x-[0.25em]">
+        {words.map((word, i) => (
+          <motion.span
+            key={i}
+            className="inline-block hover:text-primary transition-colors cursor-default"
+            whileHover={{ 
+              scale: 1.08,
+              translateY: -5,
+            }}
+            transition={{ type: "spring", stiffness: 350, damping: 15 }}
+          >
+            {word}
+          </motion.span>
+        ))}
+      </span>
+    );
+  }
+
   return (
-    <span className="inline-flex">
+    <span className="inline-flex flex-wrap justify-center">
       {text.split("").map((char, i) => (
         <motion.span
           key={i}
@@ -685,6 +781,7 @@ function StretchedText({ text }: { text: string }) {
 }
 
 function BoardMembersSection() {
+  const { t, language } = useTranslation();
   const members = [
     { role: "Président(e) de l'association", name: "Dr. Lamia ELJADIRI", icon: <ShieldCheck size={28} />, color: "bg-red-500" },
     { role: "Vice-président(e)", name: "Pr. Amal EL ALAMA", icon: <UserCheck size={28} />, color: "bg-slate-900" },
@@ -692,6 +789,25 @@ function BoardMembersSection() {
     { role: "Trésorier(ère) adjoint(e)", name: "Dr. Mohamed HOUSNI", icon: <PieChart size={28} />, color: "bg-slate-900" },
     { role: "Secrétaire général(e)", name: "Pr. Rachida ZATTI", icon: <BookOpen size={28} />, color: "bg-slate-900" },
   ];
+
+  const getRole = (role: string) => {
+    if (role === "Président(e) de l'association") {
+      return language === "ar" ? "رئيسة الجمعية" : language === "en" ? "President of the association" : "Président(e) de l'association";
+    }
+    if (role === "Vice-président(e)") {
+      return language === "ar" ? "نائبة الرئيس" : language === "en" ? "Vice President" : "Vice-président(e)";
+    }
+    if (role === "Trésorier(ère)") {
+      return language === "ar" ? "أمينة المال" : language === "en" ? "Treasurer" : "Trésorier(ère)";
+    }
+    if (role === "Trésorier(ère) adjoint(e)") {
+      return language === "ar" ? "نائب أمينة المال" : language === "en" ? "Deputy Treasurer" : "Trésorier(ère) adjoint(e)";
+    }
+    if (role === "Secrétaire général(e)") {
+      return language === "ar" ? "الكاتبة العامة" : language === "en" ? "General Secretary" : "Secrétaire général(e)";
+    }
+    return role;
+  };
 
   return (
     <section className="py-24 bg-white relative overflow-hidden">
@@ -703,7 +819,7 @@ function BoardMembersSection() {
             viewport={{ once: true }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest mb-4 border border-primary/10"
           >
-            Le Bureau
+            {language === "ar" ? "المكتب التنفيذي والمسير" : language === "en" ? "The Core Board" : "Le Bureau"}
           </motion.div>
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
@@ -712,7 +828,7 @@ function BoardMembersSection() {
             transition={{ delay: 0.1 }}
             className="text-5xl font-display font-black text-slate-900 uppercase tracking-tighter"
           >
-            Les membres de <span className="text-primary italic">l'association</span>
+            {language === "ar" ? "أعضاء مكتب" : language === "en" ? "Active members of" : "Les membres de"} <span className="text-primary italic">{language === "ar" ? "الجمعية المسيرون" : language === "en" ? "the association" : "l'association"}</span>
           </motion.h2>
         </div>
       </div>
@@ -731,7 +847,7 @@ function BoardMembersSection() {
                   {member.icon}
                 </div>
                 <div className="space-y-2 relative z-10 whitespace-normal">
-                  <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{member.role}</div>
+                  <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{getRole(member.role)}</div>
                   <h3 className="text-2xl font-display font-black text-slate-900 uppercase tracking-tight">{member.name}</h3>
                 </div>
                 
@@ -750,10 +866,14 @@ function BoardMembersSection() {
                 className="relative group p-8 bg-primary rounded-[2.5rem] flex flex-col items-center justify-center text-center hover:shadow-[0_20px_50px_rgba(236,28,36,0.3)] transition-all duration-500 cursor-pointer w-[300px] sm:w-[350px] h-[280px] sm:h-[300px]"
               >
                 <div className="text-white space-y-4">
-                  <h3 className="text-3xl font-display font-black uppercase tracking-tighter leading-none mb-4">Rejoignez <br /> le bureau</h3>
-                  <p className="text-white/80 text-sm font-medium whitespace-normal">Participez activement à la vie de l'association.</p>
+                  <h3 className="text-3xl font-display font-black uppercase tracking-tighter leading-none mb-4">
+                    {language === "ar" ? <>انضم إلينا <br /> في المكتب</> : language === "en" ? <>Join <br /> the board</> : <>Rejoignez <br /> le bureau</>}
+                  </h3>
+                  <p className="text-white/80 text-sm font-medium whitespace-normal">
+                    {language === "ar" ? "شارك بفعالية وتطوع في مختلف أنشطتنا وقدراتنا." : language === "en" ? "Take active part in the engineering of youth success." : "Participez activement à la vie de l'association."}
+                  </p>
                   <div className="inline-flex items-center justify-center w-12 h-12 bg-white text-primary rounded-full group-hover:scale-110 transition-transform">
-                    <ArrowRight size={24} />
+                    <ArrowRight size={24} className={language === "ar" ? "rotate-180" : ""} />
                   </div>
                 </div>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.2),transparent)] pointer-events-none" />
@@ -768,6 +888,7 @@ function BoardMembersSection() {
 
 function PartnersSection() {
   const [partners, setPartners] = useState<{ id: string; name: string; logoUrl: string; websiteUrl?: string }[]>([]);
+  const { t, language } = useTranslation();
 
   useEffect(() => {
     const q = query(collection(db, "partners"), orderBy("createdAt", "desc"));
@@ -785,7 +906,11 @@ function PartnersSection() {
     <section className="py-24 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
         <h2 className="text-3xl sm:text-4xl font-display font-black text-slate-900 uppercase tracking-tight mb-4">
-          Des partenaires exigeants, <span className="text-primary italic">une vision commune.</span>
+          {language === "ar" 
+            ? <>شركاء متميزون، <span className="text-primary italic">ورؤية مشتركة لبناء الغد.</span></> 
+            : language === "en" 
+            ? <>Demanding partners, <span className="text-primary italic">a common vision.</span></> 
+            : <>Des partenaires exigeants, <span className="text-primary italic">une vision commune.</span></>}
         </h2>
         <div className="w-24 h-1 bg-primary mx-auto rounded-full" />
       </div>

@@ -7,14 +7,10 @@ import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, s
 import { doc, setDoc } from "firebase/firestore";
 import { cn, handleFirestoreError, OperationType } from "../lib/utils";
 import CustomSelect from "../components/CustomSelect";
-
-const FILIERES = ["Développement de l'IA", "Développement AI", "Comptabilité et Gestion"];
-const LEVELS = [
-  { value: "1ère Année", label: "1ère Année" },
-  { value: "2ème Année", label: "2ème Année" },
-];
+import { useTranslation } from "../lib/LanguageContext";
 
 export default function Signup() {
+  const { t, language } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,10 +26,21 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const translatedFilieres = [
+    { value: "Développement de l'IA", label: language === "ar" ? "تطوير الذكاء الاصطناعي" : language === "en" ? "AI & Neural Tech" : "Développement de l'IA" },
+    { value: "Développement AI", label: language === "ar" ? "هندسة تطبيقات الذكاء الاصطناعي" : language === "en" ? "Fullstack AI Systems" : "Développement AI" },
+    { value: "Comptabilité et Gestion", label: language === "ar" ? "المحاسبة والتسيير" : language === "en" ? "Accounting & Management" : "Comptabilité et Gestion" },
+  ];
+
+  const translatedLevels = [
+    { value: "1ère Année", label: language === "ar" ? "السنة أولى تكوين" : language === "en" ? "1st Academic Year" : "1ère Année" },
+    { value: "2ème Année", label: language === "ar" ? "السنة ثانية تكوين" : language === "en" ? "2nd Academic Year" : "2ème Année" },
+  ];
+
   const handleSignup = async (e: FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.");
+      setError(language === "ar" ? "كلمتا المرور غير متطابقتين." : language === "en" ? "Passwords do not match." : "Les mots de passe ne correspondent pas.");
       return;
     }
     
@@ -73,13 +80,13 @@ export default function Signup() {
     } catch (err: any) {
       console.error("Signup error details:", err);
       if (err.code === 'auth/operation-not-allowed') {
-        setError("L'authentification par email n'est pas activée.");
+        setError(language === "ar" ? "تسجيل الدخول بالبريد الإلكتروني غير مفعّل حالياً." : language === "en" ? "Email sign-in is not enabled currently." : "L'authentification par email n'est pas activée.");
       } else if (err.code === 'auth/email-already-in-use') {
-        setError("Cet email est déjà utilisé.");
+        setError(language === "ar" ? "هذا البريد الإلكتروني مستخدم بالفعل." : language === "en" ? "This email is already registered." : "Cet email est déjà utilisé.");
       } else if (err.code === 'auth/weak-password') {
-        setError("Le mot de passe est trop court.");
+        setError(language === "ar" ? "كلمة المرور قصيرة جداً (مطلوب 6 رموز على الأقل)." : language === "en" ? "Password is too short (min. 6 chars)." : "Le mot de passe est trop court.");
       } else {
-        setError(err.message || "Une erreur est survenue lors de l'inscription.");
+        setError(err.message || (language === "ar" ? "حدث خطأ غير متوقع أثناء التسجيل." : language === "en" ? "An unexpected error occurred during signup." : "Une erreur est survenue lors de l'inscription."));
       }
     } finally {
       setLoading(false);
@@ -103,7 +110,7 @@ export default function Signup() {
       navigate("/");
     } catch (err: any) {
       console.error(err);
-      setError("Erreur lors de l'inscription avec Google.");
+      setError(language === "ar" ? "فشل إنشاء الحساب عبر Google" : language === "en" ? "Error signing up with Google." : "Erreur lors de l'inscription avec Google.");
     }
   };
 
@@ -119,15 +126,21 @@ export default function Signup() {
           <div className="w-24 h-24 bg-green-50 text-green-500 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 shadow-inner">
             <CheckCircle2 size={56} />
           </div>
-          <h1 className="text-4xl font-display font-black text-slate-900 mb-4 uppercase tracking-tighter">Vérifiez vos emails</h1>
+          <h1 className="text-4xl font-display font-black text-slate-900 mb-4 uppercase tracking-tighter">
+            {language === "ar" ? "تأكيد بريدك الإلكتروني" : language === "en" ? "Verify your email" : "Vérifiez vos emails"}
+          </h1>
           <p className="text-slate-500 mb-10 leading-relaxed font-medium">
-            Un lien de confirmation a été envoyé à <strong>{formData.email}</strong>. Activez votre compte pour rejoindre Al Kendi.
+            {language === "ar" 
+              ? `تم إرسال رابط تأكيد الحساب إلى البريد الإلكتروني ${formData.email}. يرجى تفعيله لبدء تفاعلاتك في جمعية الكندي.` 
+              : language === "en" 
+              ? `A confirmation link was successfully sent to ${formData.email}. Activate your account to join Al Kendi.` 
+              : `Un lien de confirmation a été envoyé à ${formData.email}. Activez votre compte pour rejoindre Al Kendi.`}
           </p>
           <Link 
             to="/login"
             className="inline-block w-full py-5 bg-primary text-white rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/30 transition-all hover:scale-105"
           >
-            Se Connecter
+            {language === "ar" ? "تسجيل الدخول" : language === "en" ? "Sign In to Portal" : "Se Connecter"}
           </Link>
         </motion.div>
       </div>
@@ -135,7 +148,7 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen py-20 flex items-center justify-center p-6 bg-slate-900 relative overflow-hidden">
+    <div className="min-h-screen py-20 flex items-center justify-center p-6 bg-slate-900 relative overflow-hidden text-left">
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-primary/10 rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-primary/5 rounded-full blur-3xl opacity-20 translate-y-1/2 -translate-x-1/2" />
 
@@ -145,11 +158,15 @@ export default function Signup() {
         className="w-full max-w-2xl bg-white p-12 sm:p-20 rounded-[4rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] border border-white/10 relative z-10"
       >
         <div className="text-center mb-12">
-          <div className="w-20 h-20 bg-primary/10 text-primary rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
+          <div className="w-20 h-20 bg-primary/10 text-primary rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner animate-pulse">
             <GraduationCap size={40} />
           </div>
-          <h1 className="text-4xl font-display font-black text-slate-900 mb-2 uppercase tracking-tighter">Devenir Membre</h1>
-          <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Rejoignez l'élite Al Kendi</p>
+          <h1 className="text-4xl font-display font-black text-slate-900 mb-2 uppercase tracking-tighter">
+            {language === "ar" ? "الانضمام لعضوية الجمعية" : language === "en" ? "Become a Member" : "Devenir Membre"}
+          </h1>
+          <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
+            {language === "ar" ? "انضم إلى صفوة متعلمي ومبتكري الذكاء الاصطناعي بروح الكندي" : language === "en" ? "Join the Al Kendi network of excellence" : "Rejoignez l'élite Al Kendi"}
+          </p>
         </div>
 
         {error && (
@@ -159,10 +176,12 @@ export default function Signup() {
           </div>
         )}
 
-        <form onSubmit={handleSignup} className="space-y-10">
+        <form onSubmit={handleSignup} className="space-y-10 border-0">
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom complet</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                {language === "ar" ? "الاسم الكامل" : language === "en" ? "Full Name" : "Nom complet"}
+              </label>
               <div className="relative group">
                 <User className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
                 <input 
@@ -170,14 +189,16 @@ export default function Signup() {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full pl-16 pr-6 py-5 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-white transition-all outline-none font-bold text-slate-900 placeholder:text-slate-300"
-                  placeholder="Jean Dupont"
+                  className="w-full pl-16 pr-6 py-5 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-white transition-all outline-none font-bold text-slate-900 placeholder:text-slate-300 font-sans"
+                  placeholder={language === "ar" ? "مثال: ريان المعتديدي" : "Jean Dupont"}
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                {language === "ar" ? "البريد الإلكتروني" : language === "en" ? "Email Address" : "Email"}
+              </label>
               <div className="relative group">
                 <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
                 <input 
@@ -185,14 +206,16 @@ export default function Signup() {
                   required
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full pl-16 pr-6 py-5 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-white transition-all outline-none font-bold text-slate-900 placeholder:text-slate-300"
+                  className="w-full pl-16 pr-6 py-5 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-white transition-all outline-none font-bold text-slate-900 placeholder:text-slate-300 font-sans"
                   placeholder="votre@email.com"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Téléphone</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                {language === "ar" ? "الهاتف" : language === "en" ? "Phone Number" : "Téléphone"}
+              </label>
               <div className="relative group">
                 <Phone className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
                 <input 
@@ -200,14 +223,16 @@ export default function Signup() {
                   required
                   value={formData.phoneNumber}
                   onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                  className="w-full pl-16 pr-6 py-5 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-white transition-all outline-none font-bold text-slate-900 placeholder:text-slate-300"
+                  className="w-full pl-16 pr-6 py-5 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-white transition-all outline-none font-bold text-slate-900 placeholder:text-slate-300 font-sans"
                   placeholder="+212 ..."
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mot de passe</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                {language === "ar" ? "كلمة المرور" : language === "en" ? "Password" : "Mot de passe"}
+              </label>
               <div className="relative group">
                 <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
                 <input 
@@ -215,15 +240,17 @@ export default function Signup() {
                   required
                   value={formData.password}
                   onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  className="w-full pl-16 pr-6 py-5 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-white transition-all outline-none font-bold text-slate-900 placeholder:text-slate-300"
-                  placeholder="Min. 6 car."
+                  className="w-full pl-16 pr-6 py-5 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-white transition-all outline-none font-bold text-slate-900 placeholder:text-slate-300 font-sans"
+                  placeholder={language === "ar" ? "6 رموز كحد أدنى" : language === "en" ? "Min. 6 characters" : "Min. 6 car."}
                   minLength={6}
                 />
               </div>
             </div>
             
             <div className="space-y-2 md:col-span-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirmer mot de passe</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                {language === "ar" ? "تأكيد كلمة المرور" : language === "en" ? "Confirm Password" : "Confirmer mot de passe"}
+              </label>
               <div className="relative group">
                 <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
                 <input 
@@ -231,8 +258,8 @@ export default function Signup() {
                   required
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                  className="w-full pl-16 pr-6 py-5 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-white transition-all outline-none font-bold text-slate-900 placeholder:text-slate-300"
-                  placeholder="Répétez le mot de passe"
+                  className="w-full pl-16 pr-6 py-5 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-white transition-all outline-none font-bold text-slate-900 placeholder:text-slate-300 font-sans"
+                  placeholder={language === "ar" ? "أعد كتابة كلمة المرور" : language === "en" ? "Repeat password" : "Répétez le mot de passe"}
                 />
               </div>
             </div>
@@ -240,19 +267,23 @@ export default function Signup() {
 
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Filière d'intérêt</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                {language === "ar" ? "الشعبة أو التخصص المهتم به" : language === "en" ? "Major Subject Group" : "Filière d'intérêt"}
+              </label>
               <CustomSelect
                 value={formData.filiere}
                 onChange={(val) => setFormData(prev => ({ ...prev, filiere: val }))}
-                options={FILIERES.map(f => ({ value: f, label: f }))}
+                options={translatedFilieres}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Niveau d'études</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                {language === "ar" ? "مستوى التكوين الدراسي" : language === "en" ? "Current Academic Level" : "Niveau d'études"}
+              </label>
               <CustomSelect
                 value={formData.level}
                 onChange={(val) => setFormData(prev => ({ ...prev, level: val }))}
-                options={LEVELS}
+                options={translatedLevels}
               />
             </div>
           </div>
@@ -260,12 +291,12 @@ export default function Signup() {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full py-6 bg-primary hover:bg-primary-hover text-white rounded-2xl font-black uppercase tracking-[0.2em] transition-all shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 mt-8"
+            className="w-full py-6 bg-primary hover:bg-primary-hover text-white rounded-2xl font-black uppercase tracking-[0.2em] transition-all shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 mt-8 font-sans"
           >
-            {loading ? "Création..." : (
+            {loading ? (language === "ar" ? "جاري الإنشاء..." : language === "en" ? "Creating..." : "Création...") : (
               <>
-                Finaliser l'Inscription
-                <ArrowRight size={24} />
+                {language === "ar" ? "إتمام وتأكيد الحساب" : language === "en" ? "Complete Registration" : "Finaliser l'Inscription"}
+                <ArrowRight size={24} className={language === "ar" ? "rotate-180" : ""} />
               </>
             )}
           </button>
@@ -273,9 +304,9 @@ export default function Signup() {
 
         <div className="mt-16 text-center border-t border-slate-50 pt-12">
           <p className="text-slate-400 font-medium uppercase tracking-tight text-[10px]">
-            Déjà membre de l'association ?{" "}
-            <Link to="/login" className="text-primary font-black ml-1 hover:underline underline-offset-4">
-              Se connecter
+            {language === "ar" ? "عضو مسجل مسبقاً في الجمعية؟" : language === "en" ? "Already an association member?" : "Déjà membre de l'association ?"}
+            <Link to="/login" className="text-primary font-black ml-2 hover:underline underline-offset-4">
+              {language === "ar" ? "تسجيل الدخول" : language === "en" ? "Sign In" : "Se connecter"}
             </Link>
           </p>
         </div>

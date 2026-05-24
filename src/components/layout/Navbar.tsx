@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, Rocket, Bell, Users, GraduationCap, LogIn, LogOut, ShieldCheck } from "lucide-react";
+import { Menu, X, Rocket, Bell, Users, GraduationCap, LogIn, LogOut, ShieldCheck, Globe } from "lucide-react";
 import { useAuth } from "../../lib/AuthContext";
+import { useTranslation, Language } from "../../lib/LanguageContext";
 import { auth, db } from "../../lib/firebase";
 import { signOut } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
@@ -11,11 +12,17 @@ import { cn } from "../../lib/utils";
 const ADMIN_EMAILS = ["moatadidrayan7@gmail.com", "elmoatadiderayan@gmail.com"];
 const ADMIN_UIDS = ["448tPJFMzCX1Tiz6mWo1h4Y3ImZ2"];
 
-const navItems = [
-  { name: "Accueil", path: "/", icon: <Rocket size={20} /> },
-  { name: "Annonces", path: "/announcements", icon: <Bell size={20} /> },
-  { name: "Filières", path: "/branches", icon: <GraduationCap size={20} /> },
-  { name: "Communauté", path: "/community", icon: <Users size={20} /> },
+interface NavItem {
+  key: "nav_home" | "nav_announcements" | "nav_branches" | "nav_community";
+  path: string;
+  icon: React.ReactNode;
+}
+
+const navItems: NavItem[] = [
+  { key: "nav_home", path: "/", icon: <Rocket size={20} /> },
+  { key: "nav_announcements", path: "/announcements", icon: <Bell size={20} /> },
+  { key: "nav_branches", path: "/branches", icon: <GraduationCap size={20} /> },
+  { key: "nav_community", path: "/community", icon: <Users size={20} /> },
 ];
 
 export default function Navbar() {
@@ -23,6 +30,7 @@ export default function Navbar() {
   const [appConfig, setAppConfig] = useState<{ logoUrl?: string; associationName?: string }>({});
   const { user } = useAuth();
   const location = useLocation();
+  const { t, language, setLanguage, isRtl } = useTranslation();
 
   const isAdmin = user && (ADMIN_UIDS.includes(user.uid) || (user.email && ADMIN_EMAILS.includes(user.email.toLowerCase())));
 
@@ -38,6 +46,12 @@ export default function Navbar() {
     });
     return () => unsubConfig();
   }, []);
+
+  const languageOptions: { code: Language; label: string; flag: string }[] = [
+    { code: "fr", label: "Français", flag: "🇫🇷" },
+    { code: "en", label: "English", flag: "🇺🇸" },
+    { code: "ar", label: "العربية", flag: "🇲🇦" }
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-primary/10">
@@ -58,12 +72,12 @@ export default function Navbar() {
               <span className="font-display font-extrabold text-xl leading-none text-slate-900 tracking-tight uppercase">
                 {appConfig.associationName || "AL KENDI"}
               </span>
-              <span className="text-[11px] uppercase tracking-[0.2em] text-primary font-bold">Association</span>
+              <span className="text-[11px] uppercase tracking-[0.2em] text-primary font-bold">{t("association")}</span>
             </div>
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-10">
+          <div className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
               <Link 
                 key={item.path} 
@@ -73,7 +87,7 @@ export default function Navbar() {
                   location.pathname === item.path ? "text-primary" : "text-slate-600"
                 )}
               >
-                {item.name}
+                {t(item.key)}
                 <span className={cn(
                   "absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full",
                   location.pathname === item.path ? "w-full" : ""
@@ -89,46 +103,78 @@ export default function Navbar() {
                 )}
               >
                 <ShieldCheck size={16} />
-                Admin
+                {t("nav_admin")}
               </Link>
             )}
           </div>
 
-          {/* Auth Buttons */}
+          {/* Language Switcher & Auth Buttons */}
           <div className="hidden md:flex items-center gap-6">
+            {/* Language Switch pills */}
+            <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+              {languageOptions.map((opt) => (
+                <button
+                  key={opt.code}
+                  onClick={() => setLanguage(opt.code)}
+                  className={cn(
+                    "text-[11px] font-black px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1",
+                    language === opt.code
+                      ? "bg-slate-900 text-white shadow"
+                      : "text-slate-600 hover:text-slate-950 hover:bg-slate-50"
+                  )}
+                >
+                  <span className="text-[14px]">{opt.flag}</span>
+                  <span>{opt.label.substring(0, 3).toUpperCase()}</span>
+                </button>
+              ))}
+            </div>
+
             {user ? (
               <button 
                 onClick={() => signOut(auth)}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 border border-slate-100 transition-all hover:border-primary/20"
               >
                 <LogOut size={18} />
-                <span>Déconnexion</span>
+                <span>{t("nav_logout")}</span>
               </button>
             ) : (
               <>
                 <Link 
                   to="/login"
-                  className="text-sm font-bold text-slate-600 hover:text-primary transition-colors"
+                  className="text-sm font-bold text-slate-600 hover:text-primary transition-colors animate-fade-in"
                 >
-                  Connexion
+                  {t("nav_login")}
                 </Link>
                 <Link 
                   to="/signup"
                   className="px-7 py-3 bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-bold shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95 uppercase tracking-wider"
                 >
-                  S'inscrire
+                  {t("nav_register")}
                 </Link>
               </>
             )}
           </div>
 
-          {/* Mobile Menu Toggle */}
-          <button 
-            className="md:hidden text-slate-600"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
+          {/* Mobile Menu Toggle & Select */}
+          <div className="md:hidden flex items-center gap-4">
+            {/* Tiny language switcher for topbar on mobile */}
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as Language)}
+              className="text-xs font-bold border border-slate-200 rounded-lg p-1.5 pr-2 bg-slate-50 text-slate-800 outline-none"
+            >
+              <option value="fr">🇫🇷 FR</option>
+              <option value="en">🇺🇸 EN</option>
+              <option value="ar">🇲🇦 AR</option>
+            </select>
+
+            <button 
+              className="text-slate-600"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -151,7 +197,7 @@ export default function Navbar() {
                   <div className="p-2 bg-primary/5 rounded-lg text-primary">
                     {item.icon}
                   </div>
-                  {item.name}
+                  {t(item.key)}
                 </Link>
               ))}
               {isAdmin && (
@@ -162,19 +208,19 @@ export default function Navbar() {
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <ShieldCheck size={20} />
                   </div>
-                  Admin
+                  {t("nav_admin")}
                 </Link>
               )}
               <hr className="border-slate-100" />
               {user ? (
                 <button 
                   onClick={() => signOut(auth)}
-                  className="flex items-center gap-4 text-primary font-bold text-lg"
+                  className="flex items-center gap-4 text-primary font-bold text-lg w-full text-left"
                 >
                   <div className="p-2 bg-primary/5 rounded-lg">
                     <LogOut size={20} />
                   </div>
-                  Déconnexion
+                  {t("nav_logout")}
                 </button>
               ) : (
                 <div className="flex flex-col gap-3">
@@ -185,13 +231,13 @@ export default function Navbar() {
                     <div className="p-2 bg-slate-50 rounded-lg">
                       <LogIn size={20} />
                     </div>
-                    Connexion
+                    {t("nav_login")}
                   </Link>
                   <Link 
                     to="/signup"
                     className="w-full py-4 bg-primary text-white text-center rounded-2xl font-bold uppercase tracking-widest shadow-lg shadow-primary/20"
                   >
-                    S'inscrire
+                    {t("nav_register")}
                   </Link>
                 </div>
               )}

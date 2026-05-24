@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/AuthContext";
+import { LanguageProvider } from "./lib/LanguageContext";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import Home from "./pages/Home";
@@ -21,32 +22,34 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-white font-sans text-slate-900 overflow-x-hidden">
-          <Navbar />
-          <main className="pt-16">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/announcements" element={<Announcements />} />
-              <Route path="/branches" element={<Branches />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route 
-                path="/community" 
-                element={
-                  <ProtectedRoute>
-                    <Community />
-                  </ProtectedRoute>
-                } 
-              />
-            </Routes>
-          </main>
-          <AIChat />
-          <Footer />
-        </div>
-      </Router>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-white font-sans text-slate-900 overflow-x-hidden">
+            <Navbar />
+            <main className="pt-16">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/announcements" element={<Announcements />} />
+                <Route path="/branches" element={<Branches />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route 
+                  path="/community" 
+                  element={
+                    <ProtectedRoute>
+                      <Community />
+                    </ProtectedRoute>
+                  } 
+                />
+              </Routes>
+            </main>
+            <AIChat />
+            <Footer />
+          </div>
+        </Router>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }

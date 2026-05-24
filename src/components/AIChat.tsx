@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { MessageSquare, Send, X, Bot, User, Sparkles } from "lucide-react";
 import { askAI } from "../services/geminiService";
 import { cn } from "../lib/utils";
+import { useTranslation } from "../lib/LanguageContext";
 
 interface Message {
   id: string;
@@ -11,6 +12,7 @@ interface Message {
 }
 
 export default function AIChat() {
+  const { language } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -48,14 +50,14 @@ export default function AIChat() {
       }));
 
     const aiResponse = await askAI(input, history);
-    const aiMsg: Message = { id: (Date.now() + 1).toString(), role: "ai", text: aiResponse || "Je n'ai pas pu générer de réponse." };
+    const aiMsg: Message = { id: (Date.now() + 1).toString(), role: "ai", text: aiResponse || (language === "ar" ? "معذرة، لم أتمكن من صياغة إجابة." : language === "en" ? "I could not generate a response." : "Je n'ai pas pu générer de réponse.") };
     
     setMessages(prev => [...prev, aiMsg]);
     setIsTyping(false);
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100]">
+    <div className="fixed bottom-6 right-6 z-[100] text-left">
       <AnimatePresence>
         {isOpen && (
           <motion.div 
@@ -68,14 +70,18 @@ export default function AIChat() {
             <div className="p-8 bg-slate-900 text-white flex justify-between items-center relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
               <div className="flex items-center gap-4 relative z-10">
-                <div className="p-3 bg-primary text-white rounded-2xl shadow-lg shadow-primary/20">
+                <div className="p-3 bg-primary text-white rounded-2xl shadow-lg shadow-primary/20 animate-pulse">
                   <Bot size={24} />
                 </div>
                 <div>
-                  <h3 className="font-display font-black uppercase tracking-tighter text-lg leading-tight">Al Kendi Assistant</h3>
+                  <h3 className="font-display font-black uppercase tracking-tighter text-lg leading-tight">
+                    {language === "ar" ? "مساعد الكندي الذكي" : language === "en" ? "Al Kendi Assistant" : "Al Kendi Assistant"}
+                  </h3>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Intelligence Active</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                      {language === "ar" ? "ذكاء اصطناعي نشط" : language === "en" ? "Active Intellect" : "Intelligence Active"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -106,7 +112,13 @@ export default function AIChat() {
                       ? "bg-primary text-white rounded-tr-none shadow-primary/10" 
                       : "bg-white text-slate-700 rounded-tl-none border border-slate-100"
                   )}>
-                    {msg.text}
+                    {msg.id === "1"
+                      ? (language === "ar" 
+                         ? "مرحباً! أنا مساعد الكندي الذكي. كيف يمكنني مساعدتك اليوم؟" 
+                         : language === "en" 
+                         ? "Hello! I am the Al Kendi Assistant. How can I help you today?" 
+                         : "Salam ! Je suis l'assistant Al Kendi. Comment puis-je vous aider aujourd'hui ?")
+                      : msg.text}
                   </div>
                 </div>
               ))}
@@ -126,15 +138,15 @@ export default function AIChat() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                placeholder="Écrivez votre message..."
-                className="flex-1 bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl px-6 py-4 text-sm font-bold outline-none transition-all placeholder:text-slate-300"
+                placeholder={language === "ar" ? "اكتب رسالتك هنا..." : language === "en" ? "Write your message..." : "Écrivez votre message..."}
+                className="flex-1 bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl px-6 py-4 text-sm font-bold outline-none transition-all placeholder:text-slate-300 font-sans"
               />
               <button 
                 onClick={handleSend}
                 disabled={!input.trim() || isTyping}
                 className="p-4 bg-primary text-white rounded-2xl hover:bg-primary-hover disabled:opacity-50 transition-all active:scale-95 shadow-xl shadow-primary/20"
               >
-                <Send size={24} />
+                <Send size={24} className={language === "ar" ? "rotate-180" : ""} />
               </button>
             </div>
           </motion.div>
@@ -160,7 +172,7 @@ export default function AIChat() {
           )}
         </AnimatePresence>
         {!isOpen && (
-          <div className="absolute top-4 right-4 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full" />
+          <div className="absolute top-4 right-4 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full animate-pulse" />
         )}
       </motion.button>
     </div>

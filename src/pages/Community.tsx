@@ -6,6 +6,7 @@ import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, delete
 import { useAuth } from "../lib/AuthContext";
 import { cn } from "../lib/utils";
 import CustomSelect from "../components/CustomSelect";
+import { useTranslation } from "../lib/LanguageContext";
 
 interface Course {
   id: string;
@@ -31,6 +32,7 @@ interface CommunityDoc {
 
 export default function Community() {
   const { user } = useAuth();
+  const { t, language } = useTranslation();
   const [courses, setCourses] = useState<Course[]>([]);
   const [communityDocs, setCommunityDocs] = useState<CommunityDoc[]>([]);
   const [activeTab, setActiveTab] = useState<"courses" | "documents">("courses");
@@ -60,7 +62,7 @@ export default function Community() {
       setCourses(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
     }, (err) => {
       console.error(err);
-      setError("Erreur de chargement des ressources.");
+      setError(language === "ar" ? "حدث خطأ أثناء تحميل الملفات والموارد." : language === "en" ? "Error loading community resources." : "Erreur de chargement des ressources.");
     });
 
     const qDocs = query(collection(db, "community_documents"), orderBy("createdAt", "desc"));
@@ -74,13 +76,13 @@ export default function Community() {
       unsubscribeCourses();
       unsubscribeDocs();
     };
-  }, []);
+  }, [language]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 1.5 * 1024 * 1024) {
-        alert("Fichier trop lourd (max 1.5Mo)");
+        alert(language === "ar" ? "الملف كبير جداً (الأقصى 1.5 ميجا بايت)" : language === "en" ? "File size exceeded (Max 1.5MB)" : "Fichier trop lourd (max 1.5Mo)");
         return;
       }
       const reader = new FileReader();
@@ -111,7 +113,7 @@ export default function Community() {
         });
         setNewCourse({ title: "", content: "", filiere: "Développement de l'IA", level: "1ère Année" });
       } else {
-        if (!newDoc.fileData) throw new Error("Fichier requis");
+        if (!newDoc.fileData) throw new Error(language === "ar" ? "يجب اختيار ملف أولاً" : language === "en" ? "A file is required" : "Fichier requis");
         await addDoc(collection(db, "community_documents"), {
           ...newDoc,
           authorId: user.uid,
@@ -123,14 +125,19 @@ export default function Community() {
       setShowAddModal(false);
     } catch (err) {
       console.error(err);
-      setError("Erreur lors de la publication.");
+      setError(language === "ar" ? "حدث خطأ أثناء نشر ومشاركة المورد." : language === "en" ? "Error occurred while publishing." : "Erreur lors de la publication.");
     } finally {
       setPosting(false);
     }
   };
 
   const handleDeleteDoc = async (id: string) => {
-    alert("🔒 Les documents partagés au sein de la communauté sont configurés comme étant permanents et insupprimables pour préserver le savoir collectif.");
+    const alertMsg = language === "ar"
+      ? "🔒 المستندات والموارد التعليمية المشتركة في الفضاء تعتبر إرثاً أكاديمياً دائماً ومحمية من الحذف لحفظ المعرفة الجماعية."
+      : language === "en"
+      ? "🔒 Shared documents within the community are configured as permanent and non-deletable to preserve collective knowledge."
+      : "🔒 Les documents partagés au sein de la communauté sont configurés comme étant permanents et insupprimables pour préserver le savoir collectif.";
+    alert(alertMsg);
   };
 
   const downloadFile = (fileData: string, fileName: string) => {
@@ -138,6 +145,19 @@ export default function Community() {
     link.href = fileData;
     link.download = fileName;
     link.click();
+  };
+
+  const getTranslatedFiliere = (filiere: string) => {
+    if (filiere === "Développement de l'IA") {
+      return language === "ar" ? "تطوير الذكاء الاصطناعي" : language === "en" ? "AI & Neural Tech" : "Développement de l'IA";
+    }
+    if (filiere === "Développement AI") {
+      return language === "ar" ? "هندسة برمجيات الذكاء الاصطناعي" : language === "en" ? "Fullstack AI Systems" : "Développement AI";
+    }
+    if (filiere === "Comptabilité et Gestion") {
+      return language === "ar" ? "المحاسبة والتسيير" : language === "en" ? "Accounting & Management" : "Comptabilité et Gestion";
+    }
+    return filiere;
   };
 
   const filteredCourses = courses.filter(c => {
@@ -156,13 +176,13 @@ export default function Community() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-20">
-          <div className="max-w-2xl">
+          <div className="max-w-2xl text-left">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
                 <Users size={32} />
               </div>
               <h1 className="text-3xl sm:text-6xl font-display font-black text-slate-900 leading-none uppercase tracking-tighter">
-                Espace <br /><span className="text-primary italic">Communautaire</span>
+                {language === "ar" ? "فـضاء" : language === "en" ? "Community" : "Espace"} <br /><span className="text-primary italic">{language === "ar" ? "المشـاركة الطلابيـة" : language === "en" ? "Hub" : "Communautaire"}</span>
               </h1>
             </div>
             <div className="flex gap-4 mb-6">
@@ -173,7 +193,7 @@ export default function Community() {
                   activeTab === "courses" ? "bg-primary text-white shadow-xl shadow-primary/20" : "bg-white text-slate-400 hover:text-slate-600 border border-slate-100"
                 )}
               >
-                Cours & Notes
+                {language === "ar" ? "الدروس والملخصات" : language === "en" ? "Courses & Notes" : "Cours & Notes"}
               </button>
               <button 
                 onClick={() => setActiveTab("documents")}
@@ -182,7 +202,7 @@ export default function Community() {
                   activeTab === "documents" ? "bg-primary text-white shadow-xl shadow-primary/20" : "bg-white text-slate-400 hover:text-slate-600 border border-slate-100"
                 )}
               >
-                Documents & PDF
+                {language === "ar" ? "المستندات والملفات" : language === "en" ? "Documents & PDF" : "Documents & PDF"}
               </button>
             </div>
           </div>
@@ -192,23 +212,30 @@ export default function Community() {
             className="flex items-center justify-center gap-3 px-10 py-5 bg-primary hover:bg-primary-hover text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/20 transition-all hover:scale-105 active:scale-95"
           >
             <Plus size={20} />
-            Partager {activeTab === "courses" ? "une ressource" : "un document"}
+            {language === "ar" 
+              ? (activeTab === "courses" ? "شارك درساً جديداً" : "شارك مستنداً جديداً") 
+              : language === "en" 
+              ? (activeTab === "courses" ? "Share a resource" : "Share a document") 
+              : (activeTab === "courses" ? "Partager une ressource" : "Partager un document")}
           </button>
         </div>
 
         {error && (
-          <div className="mb-12 p-6 bg-red-50 text-red-600 rounded-3xl flex items-center gap-4 text-sm font-bold uppercase border border-red-100">
+          <div className="mb-12 p-6 bg-red-50 text-red-600 rounded-3xl flex items-center gap-4 text-sm font-bold uppercase border border-red-100 text-left">
             <AlertCircle size={24} className="shrink-0" />
             {error}
           </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          <div className="md:col-span-2 relative group">
+          <div className="md:col-span-2 relative group text-left">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors" size={24} />
             <input 
-              type="text" placeholder="Rechercher..." value={search} onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-16 pr-8 py-5 bg-white rounded-[2rem] border-2 border-transparent focus:border-primary outline-none shadow-sm font-bold text-slate-900 transition-all"
+              type="text" 
+              placeholder={language === "ar" ? "بحث عن تخصص أو مقرر..." : language === "en" ? "Search resources..." : "Rechercher..."}
+              value={search} 
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-16 pr-8 py-5 bg-white rounded-[2rem] border-2 border-transparent focus:border-primary outline-none shadow-sm font-bold text-slate-900 transition-all font-sans"
             />
           </div>
           {activeTab === "courses" && (
@@ -216,10 +243,10 @@ export default function Community() {
               value={filter}
               onChange={(val) => setFilter(val)}
               options={[
-                { value: "all", label: "Toutes les filières" },
-                { value: "Développement de l'IA", label: "Développement de l'IA" },
-                { value: "Développement AI", label: "Développement AI" },
-                { value: "Comptabilité et Gestion", label: "Comptabilité et Gestion" },
+                { value: "all", label: language === "ar" ? "جميع الشعب والتخصصات" : language === "en" ? "All Major Streams" : "Toutes les filières" },
+                { value: "Développement de l'IA", label: language === "ar" ? "تطوير الذكاء الاصطناعي" : language === "en" ? "AI & Neural Tech" : "Développement de l'IA" },
+                { value: "Développement AI", label: language === "ar" ? "هندسة برمجيات الذكاء الاصطناعي" : language === "en" ? "Fullstack AI Systems" : "Développement AI" },
+                { value: "Comptabilité et Gestion", label: language === "ar" ? "المحاسبة والتسيير" : language === "en" ? "Accounting & Management" : "Comptabilité et Gestion" },
               ]}
               className="md:col-span-1"
             />
@@ -227,20 +254,24 @@ export default function Community() {
         </div>
 
         {activeTab === "courses" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
             {filteredCourses.length > 0 ? (
               filteredCourses.map((course, i) => (
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                   key={course.id}
-                  className="bg-white p-6 sm:p-10 rounded-[2.5rem] sm:rounded-[3rem] border border-slate-100 hover:border-primary/20 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] transition-all duration-500 group"
+                  className="bg-white p-6 sm:p-10 rounded-[2.5rem] sm:rounded-[3rem] border border-slate-100 hover:border-primary/20 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] transition-all duration-500 group text-left"
                 >
-                  <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center justify-between mb-8 flex-wrap gap-2">
                     <span className="px-4 py-1.5 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase tracking-widest">
-                      {course.filiere}
+                      {getTranslatedFiliere(course.filiere)}
                     </span>
                     <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-                      Niveau {course.level}
+                      {language === "ar" 
+                        ? `العام: ${course.level === "1ère Année" ? "الأول" : "الثاني"}` 
+                        : language === "en" 
+                        ? `Level: ${course.level === "1ère Année" ? "1st Year" : "2nd Year"}` 
+                        : `Niveau ${course.level}`}
                     </span>
                   </div>
 
@@ -259,7 +290,9 @@ export default function Community() {
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-black text-slate-900 leading-none mb-1 uppercase tracking-tighter">{course.author}</span>
-                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Membre vérifié</span>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                          {language === "ar" ? "عضو معتمد وباحث" : language === "en" ? "Verified Scholar" : "Membre vérifié"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -268,12 +301,14 @@ export default function Community() {
             ) : (
               <div className="col-span-full py-32 text-center bg-white rounded-[4rem] border-2 border-dashed border-slate-100">
                 <Book size={80} className="mx-auto text-slate-100 mb-8" />
-                <h3 className="text-2xl font-black text-slate-300 uppercase tracking-tighter">Aucune ressource trouvée</h3>
+                <h3 className="text-2xl font-black text-slate-300 uppercase tracking-tighter">
+                  {language === "ar" ? "لم نجد أي مورد مطابق للبحث" : language === "en" ? "No study resources found" : "Aucune ressource trouvée"}
+                </h3>
               </div>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
             {filteredDocs.length > 0 ? (
               filteredDocs.map((docItem, i) => (
                 <motion.div 
@@ -288,7 +323,7 @@ export default function Community() {
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate mb-4">{docItem.fileName}</p>
                   
                   <div className="mt-auto flex items-center justify-between">
-                    <span className="text-[9px] font-black p-2 bg-slate-50 rounded-lg text-slate-500 uppercase">{docItem.authorName}</span>
+                    <span className="text-[9px] font-black p-2 bg-slate-50 rounded-lg text-slate-500 uppercase truncate max-w-[120px]">{docItem.authorName}</span>
                     <div className="flex gap-2">
                        {user?.uid === docItem.authorId && (
                          <button onClick={() => handleDeleteDoc(docItem.id)} className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
@@ -305,7 +340,9 @@ export default function Community() {
             ) : (
               <div className="col-span-full py-32 text-center bg-white rounded-[4rem] border-2 border-dashed border-slate-100">
                 <FileText size={80} className="mx-auto text-slate-100 mb-8" />
-                <h3 className="text-2xl font-black text-slate-300 uppercase tracking-tighter">Aucun document partagé</h3>
+                <h3 className="text-2xl font-black text-slate-300 uppercase tracking-tighter">
+                  {language === "ar" ? "لم يتم مشاركة أي ملفات أو وثائق بعد" : language === "en" ? "No community files shared yet" : "Aucun document partagé"}
+                </h3>
               </div>
             )}
           </div>
@@ -316,15 +353,23 @@ export default function Community() {
             <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xl">
               <motion.div 
                 initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-                className="relative w-full max-w-2xl bg-white rounded-[2.5rem] sm:rounded-[4rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] p-8 sm:p-12 overflow-y-auto max-h-[90vh]"
+                className="relative w-full max-w-2xl bg-white rounded-[2.5rem] sm:rounded-[4rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] p-8 sm:p-12 overflow-y-auto max-h-[90vh] text-left"
               >
                 <button onClick={() => setShowAddModal(false)} className="absolute top-6 right-6 sm:top-10 sm:right-10 p-2 text-slate-300 hover:text-slate-900 transition-colors z-20">
                   <X size={28} className="sm:size-8" />
                 </button>
 
                 <div className="text-center mb-8">
-                   <h2 className="text-2xl sm:text-4xl font-display font-black text-slate-900 uppercase tracking-tighter">Partager {activeTab === "courses" ? "une ressource" : "un document"}</h2>
-                   <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-2 italic">Diffusion de savoir académique</p>
+                   <h2 className="text-2xl sm:text-4xl font-display font-black text-slate-900 uppercase tracking-tighter">
+                     {language === "ar" 
+                       ? (activeTab === "courses" ? "نشر وتداول مورد تعليمي" : "نشر مستند أو وثيقة") 
+                       : language === "en" 
+                       ? (activeTab === "courses" ? "Share an Academic Resource" : "Upload an Academic Document") 
+                       : (activeTab === "courses" ? "Partager une ressource" : "Partager un document")}
+                   </h2>
+                   <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-2 italic">
+                     {language === "ar" ? "مساهمة في تداول وترسيخ العلم والمعرفة الجماعية" : language === "en" ? "Contributing to collective academic knowledge" : "Diffusion de savoir académique"}
+                   </p>
                 </div>
 
                 <form onSubmit={handlePost} className="space-y-8">
@@ -332,60 +377,72 @@ export default function Community() {
                     <>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="space-y-4">
-                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Filière concernée</label>
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                            {language === "ar" ? "الشعبة والتخصص المعني" : language === "en" ? "Target Major Stream" : "Filière concernée"}
+                          </label>
                           <CustomSelect
                             value={newCourse.filiere}
                             onChange={(val) => setNewCourse(prev => ({ ...prev, filiere: val }))}
                             options={[
-                              { value: "Développement de l'IA", label: "Développement de l'IA" },
-                              { value: "Développement AI", label: "Développement AI" },
-                              { value: "Comptabilité et Gestion", label: "Comptabilité et Gestion" },
+                              { value: "Développement de l'IA", label: language === "ar" ? "تطوير الذكاء الاصطناعي" : language === "en" ? "AI & Neural Tech" : "Développement de l'IA" },
+                              { value: "Développement AI", label: language === "ar" ? "هندسة تطبيقات الذكاء الاصطناعي" : language === "en" ? "Fullstack AI Systems" : "Développement AI" },
+                              { value: "Comptabilité et Gestion", label: language === "ar" ? "المحاسبة والتسيير" : language === "en" ? "Accounting & Management" : "Comptabilité et Gestion" },
                             ]}
                           />
                         </div>
                         <div className="space-y-4">
-                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Niveau d'études</label>
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                            {language === "ar" ? "مستوى التوجيه الأكاديمي" : language === "en" ? "Academic Level" : "Niveau d'études"}
+                          </label>
                           <CustomSelect
                             value={newCourse.level}
                             onChange={(val) => setNewCourse(prev => ({ ...prev, level: val }))}
                             options={[
-                              { value: "1ère Année", label: "1ère Année" },
-                              { value: "2ème Année", label: "2ème Année" },
+                              { value: "1ère Année", label: language === "ar" ? "السنة أولى تكوين" : language === "en" ? "1st Academic Year" : "1ère Année" },
+                              { value: "2ème Année", label: language === "ar" ? "السنة ثانية تكوين" : language === "en" ? "2nd Academic Year" : "2ème Année" },
                             ]}
                           />
                         </div>
                       </div>
 
-                      <div className="space-y-4">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Titre de la ressource</label>
+                      <div className="space-y-4 text-left">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                          {language === "ar" ? "عنوان المورد والدرس" : language === "en" ? "Resource Title" : "Titre de la ressource"}
+                        </label>
                         <input 
                           type="text" required value={newCourse.title} onChange={(e) => setNewCourse(prev => ({ ...prev, title: e.target.value }))}
-                          placeholder="Ex: Fondamentaux de Python"
-                          className="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl outline-none font-black text-slate-900 tracking-tight"
+                          placeholder={language === "ar" ? "مثال: أساسيات ومفاهيم التعلم العميق" : language === "en" ? "e.g. Deep Learning core concepts" : "Ex: Fondamentaux de Python"}
+                          className="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl outline-none font-black text-slate-900 tracking-tight font-sans"
                         />
                       </div>
 
-                      <div className="space-y-4">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
+                      <div className="space-y-4 text-left">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                          {language === "ar" ? "محتوى الملخص وتفاصيل إضافية" : language === "en" ? "Content & Details" : "Description"}
+                        </label>
                         <textarea 
                           required rows={6} value={newCourse.content} onChange={(e) => setNewCourse(prev => ({ ...prev, content: e.target.value }))}
-                          placeholder="Décrivez votre ressource..."
-                          className="w-full px-8 py-6 bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl outline-none font-medium text-slate-600 resize-none leading-relaxed"
+                          placeholder={language === "ar" ? "اكتب هنا مذكرات علمية أو مراجع الملخص لتعميم الفائدة..." : language === "en" ? "Describe your study materials, references, and content..." : "Décrivez votre ressource..."}
+                          className="w-full px-8 py-6 bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl outline-none font-medium text-slate-600 resize-none leading-relaxed font-sans"
                         />
                       </div>
                     </>
                   ) : (
                     <>
-                      <div className="space-y-4">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Titre du Document</label>
+                      <div className="space-y-4 text-left">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                          {language === "ar" ? "عنوان المستند أو الامتحان" : language === "en" ? "Document Title" : "Titre du Document"}
+                        </label>
                         <input 
                           type="text" required value={newDoc.title} onChange={(e) => setNewDoc(prev => ({ ...prev, title: e.target.value }))}
-                          placeholder="Ex: TD Algèbre Linéaire"
-                          className="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl outline-none font-black text-slate-900 tracking-tight"
+                          placeholder={language === "ar" ? "مثال: مراجعة شاملة لاختبار الجبر الخطي" : language === "en" ? "e.g. Linear Algebra exam notes" : "Ex: TD Algèbre Linéaire"}
+                          className="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl outline-none font-black text-slate-900 tracking-tight font-sans"
                         />
                       </div>
-                      <div className="space-y-4">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Fichier (PDF, Image...)</label>
+                      <div className="space-y-4 text-left">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                          {language === "ar" ? "تحميل ملف (PDF، مذكرات، صور...)" : language === "en" ? "Target File (PDF, Images...)" : "Fichier (PDF, Image...)"}
+                        </label>
                         <div className="relative group/doc">
                           <input type="file" onChange={handleFileUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                           <div className={cn(
@@ -396,9 +453,9 @@ export default function Community() {
                               <FileText className={cn(newDoc.fileData ? 'text-primary' : 'text-slate-300')} size={32} />
                             </div>
                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                              {newDoc.fileName || "Cliquez pour sélectionner un fichier"}
+                              {newDoc.fileName || (language === "ar" ? "اضغط هنا لتحديد الملف من جهازك" : language === "en" ? "Click to pick a file from your device" : "Cliquez pour sélectionner un fichier")}
                             </span>
-                            {newDoc.fileName && <span className="text-[8px] text-primary font-bold">Fichier prêt !</span>}
+                            {newDoc.fileName && <span className="text-[8px] text-primary font-bold">{language === "ar" ? "الملف جاهز ومستعد للرفع !" : language === "en" ? "File is loaded and ready!" : "Fichier prêt !"}</span>}
                           </div>
                         </div>
                       </div>
@@ -406,8 +463,8 @@ export default function Community() {
                   )}
 
                   <button type="submit" disabled={posting} className="w-full py-6 bg-primary text-white rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/30 flex items-center justify-center gap-3">
-                    {posting ? "Patientez..." : (
-                      <>Publier Maintenant <ArrowRight size={24} /></>
+                    {posting ? (language === "ar" ? "جاري النشر..." : language === "en" ? "Publishing..." : "Patientez...") : (
+                      <>{language === "ar" ? "انشر وشارك الآن" : language === "en" ? "Publish Now" : "Publier Maintenant"} <ArrowRight size={24} /></>
                     )}
                   </button>
                 </form>
