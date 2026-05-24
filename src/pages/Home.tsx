@@ -1,7 +1,7 @@
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "motion/react";
 import React, { useEffect, useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, UserCheck, ShieldCheck, Cpu, Code, PieChart, Bell, Calendar, Video, Star, Quote, ChevronDown, ChevronUp, Bot, Image as ImageIcon } from "lucide-react";
+import { ArrowRight, BookOpen, UserCheck, ShieldCheck, Cpu, Code, PieChart, Bell, Calendar, Video, Star, Quote, ChevronDown, ChevronUp, Bot, Image as ImageIcon, Play, X } from "lucide-react";
 import { collection, query, orderBy, limit, onSnapshot, doc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { cn } from "../lib/utils";
@@ -34,6 +34,7 @@ export default function Home() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [newOpinion, setNewOpinion] = useState({ name: "", rating: 5, comment: "" });
   const [submittingOpinion, setSubmittingOpinion] = useState(false);
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
   const { t, language } = useTranslation();
 
   useEffect(() => {
@@ -94,21 +95,23 @@ export default function Home() {
   return (
     <div className="flex flex-col">
         {/* Hero Section */}
-      <section className="relative min-h-[90vh] sm:min-h-screen flex items-center pt-20 overflow-hidden px-[5%] sm:px-0">
-        <div className="absolute inset-0 z-0">
+      <section className="relative min-h-[90vh] sm:min-h-screen flex items-center pt-24 pb-16 overflow-hidden">
+        <div className="absolute inset-0 z-0 select-none">
           {heroSettings.videoUrl ? (
-            <div className="absolute inset-0 bg-slate-900">
+            <div className="absolute inset-0 bg-slate-900 overflow-hidden w-full h-full">
               {(() => {
                 const isYouTube = heroSettings.videoUrl.includes('youtube.com') || heroSettings.videoUrl.includes('youtu.be');
                 const ytMatch = isYouTube ? heroSettings.videoUrl.match(/(?:v=|\/|embed\/)([0-9A-Za-z_-]{11})/) : null;
                 
                 if (ytMatch) {
                   return (
-                    <iframe
-                      src={`https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytMatch[1]}&rel=0&showinfo=0&modestbranding=1&iv_load_policy=3`}
-                      className="w-full h-full object-cover scale-[1.5] pointer-events-none"
-                      allow="autoplay; encrypted-media"
-                    />
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden w-full h-full bg-slate-950">
+                      <iframe
+                        src={`https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytMatch[1]}&rel=0&showinfo=0&modestbranding=1&iv_load_policy=3&playsinline=1`}
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[300%] min-w-full min-h-full pointer-events-none"
+                        allow="autoplay; encrypted-media"
+                      />
+                    </div>
                   );
                 }
                 return (
@@ -119,7 +122,7 @@ export default function Home() {
                     loop 
                     muted 
                     playsInline 
-                    className="w-full h-full object-cover opacity-90"
+                    className="absolute inset-0 w-full h-full object-cover opacity-90 select-none"
                   />
                 );
               })()}
@@ -128,11 +131,11 @@ export default function Home() {
             <img 
               src={heroSettings.imageUrl || HERO_IMG}
               alt="Students"
-              className="w-full h-full object-cover opacity-40"
+              className="w-full h-full object-cover opacity-40 select-none"
               referrerPolicy="no-referrer"
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-tr from-white/40 via-white/20 to-transparent backdrop-blur-[1px]" />
+          <div className="absolute inset-0 bg-white/60 sm:bg-white/40 backdrop-blur-[2px] sm:backdrop-blur-[1px]" />
         </div>
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full text-center">
@@ -149,7 +152,7 @@ export default function Home() {
               <StretchedText text={t("hero_title_1")} /> <br /> 
               <StretchedText text={t("hero_title_2")} /> <span className="text-primary italic inline-block"><StretchedText text={t("hero_title_3")} /></span>
             </h1>
-            <p className="text-xl sm:text-2xl text-slate-800 font-medium mb-12 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-2xl text-slate-800 font-medium mb-10 max-w-2xl mx-auto leading-relaxed px-2">
               {language === "ar" 
                 ? "انضموا إلى مجتمع طلابي حيوي وشغوف بالبرمجة والتطوير، تكنولوجيا المعلومات، والتسيير الإداري والمالي." 
                 : language === "en" 
@@ -157,23 +160,34 @@ export default function Home() {
                 : "Rejoignez une communauté dynamique d'étudiants passionnés par le développement, l'informatique et la gestion."}
             </p>
             
-            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-6">
+            <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 sm:gap-6 max-w-lg sm:max-w-none mx-auto w-full px-2 sm:px-0">
               <Link 
                 to="/signup"
-                className="px-12 py-5 bg-primary hover:bg-primary-hover text-white rounded-xl font-black shadow-2xl shadow-primary/30 transition-all hover:scale-105 flex items-center justify-center gap-3 uppercase tracking-wider text-lg"
+                className="w-full sm:w-auto px-6 sm:px-8 lg:px-12 py-4 sm:py-5 bg-primary hover:bg-primary-hover text-white rounded-xl font-black shadow-lg sm:shadow-2xl shadow-primary/30 transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2 sm:gap-3 uppercase tracking-wider text-sm sm:text-base lg:text-lg"
               >
                 {t("community_btn")}
-                <ArrowRight size={24} className={language === "ar" ? "rotate-180" : ""} />
+                <ArrowRight size={20} className={language === "ar" ? "rotate-180" : ""} />
               </Link>
               <button 
                 onClick={() => {
                   const event = new CustomEvent('open-ai-chat');
                   window.dispatchEvent(event);
                 }}
-                className="px-10 py-5 bg-slate-900 border-2 border-slate-900 text-white rounded-xl font-black transition-all hover:bg-slate-800 flex items-center justify-center gap-3 uppercase tracking-wider text-lg"
+                className="w-full sm:w-auto px-6 sm:px-8 lg:px-10 py-4 sm:py-5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black shadow-lg transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2 sm:gap-3 uppercase tracking-wider text-sm sm:text-base lg:text-lg border-2 border-transparent"
               >
-                <Bot size={24} className="text-primary" />
+                <Bot size={20} className="text-primary" />
                 {t("interrogate_ai")}
+              </button>
+              <button 
+                onClick={() => setIsVideoOpen(true)}
+                className="w-full sm:w-auto px-6 sm:px-8 lg:px-10 py-4 sm:py-5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-500 text-white rounded-xl font-black shadow-lg sm:shadow-2xl shadow-red-600/20 transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2 sm:gap-3 uppercase tracking-wider text-sm sm:text-base lg:text-lg"
+              >
+                <Play size={20} className="fill-current text-white animate-pulse" />
+                {language === "ar" 
+                  ? "عرض فيديو الكندي التعريفى" 
+                  : language === "en" 
+                  ? "Al Kendi Video Presentation" 
+                  : "Présentation Vidéo Al Kendi"}
               </button>
             </div>
           </motion.div>
@@ -380,7 +394,7 @@ export default function Home() {
         <BoardMembersSection />
 
         {/* Bottom Wave to dark section */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] rotate-180">
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
           <svg className="relative block w-[calc(134%+1.3px)] h-[80px] animate-wave-reverse" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" fill="#0f172a"></path>
           </svg>
@@ -652,12 +666,71 @@ export default function Home() {
       </section>
 
       {/* Bottom Wave to Footer */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] rotate-180">
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
           <svg className="relative block w-[calc(134%+1.3px)] h-[80px] animate-wave-reverse" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" fill="#0f172a"></path>
           </svg>
         </div>
       </section>
+
+      {/* YouTube Video Modal */}
+      <AnimatePresence>
+        {isVideoOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xl"
+            onClick={() => setIsVideoOpen(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="relative w-full max-w-4xl bg-white rounded-[2.5rem] p-4 sm:p-6 shadow-3xl overflow-hidden border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button 
+                onClick={() => setIsVideoOpen(false)}
+                className="absolute top-6 right-6 p-3 bg-slate-900/10 hover:bg-slate-900/20 text-slate-800 rounded-full transition-all hover:scale-115 active:scale-90 z-20 shadow-md"
+                aria-label="Close modal"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="text-center mb-6 pt-2">
+                <h3 className="text-2xl font-display font-black text-slate-900 uppercase tracking-tight">
+                  {language === "ar" 
+                    ? "فيديو الكندي التعريفي" 
+                    : language === "en" 
+                    ? "Al Kendi Video Presentation" 
+                    : "Présentation Vidéo Al Kendi"}
+                </h3>
+                <p className="text-xs font-bold text-primary uppercase tracking-[0.2em] mt-1">
+                  {language === "ar" ? "أبواب التميز والفرص المستقبلية" : "Engineering of Youth Success"}
+                </p>
+              </div>
+
+              {/* Responsive Iframe Container */}
+              <div className="relative aspect-video w-full rounded-2xl overflow-hidden shadow-2xl border border-slate-100 bg-black">
+                <iframe 
+                  width="100%" 
+                  height="100%" 
+                  src="https://www.youtube.com/embed/lAnQukafWL0?si=A0lC3Pp55Tm94BBW&autoplay=1" 
+                  title="YouTube video player" 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                  referrerPolicy="strict-origin-when-cross-origin" 
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full"
+                ></iframe>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
