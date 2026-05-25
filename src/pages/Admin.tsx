@@ -389,7 +389,7 @@ export default function Admin() {
                           >
                             <button 
                               onClick={() => handleDeletePartner(partner.id)}
-                              className="absolute top-4 right-4 p-2 bg-red-50 text-red-500 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white"
+                              className="absolute top-4 right-4 p-2 bg-red-50 hover:bg-red-500 hover:text-white text-red-500 rounded-xl transition-all shadow-sm z-10"
                             >
                               <Trash2 size={16} />
                             </button>
@@ -596,7 +596,7 @@ export default function Admin() {
                         >
                           <button 
                             onClick={() => handleDeleteTestimonial(t.id)}
-                            className="absolute top-6 right-6 p-2 bg-red-50 text-red-500 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white"
+                            className="absolute top-6 right-6 p-2 bg-red-50 hover:bg-red-500 hover:text-white text-red-500 rounded-xl transition-all shadow-sm z-10"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -647,7 +647,7 @@ export default function Admin() {
                               </div>
                               <button 
                                 onClick={() => handleDeleteCourse(course.id)}
-                                className="p-3 bg-red-50 text-red-500 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white"
+                                className="p-3 bg-red-50 hover:bg-red-500 hover:text-white text-red-500 rounded-xl transition-all shadow-sm"
                               >
                                 <Trash2 size={16} />
                               </button>
@@ -677,7 +677,7 @@ export default function Admin() {
                             >
                               <button 
                                 onClick={() => handleDeleteDoc(docItem.id)}
-                                className="absolute top-2 right-2 p-1.5 bg-red-50 text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white z-10"
+                                className="absolute top-2 right-2 p-1.5 bg-red-50 hover:bg-red-500 hover:text-white text-red-500 rounded-lg transition-all shadow-sm z-10"
                               >
                                 <Trash2 size={12} />
                               </button>
