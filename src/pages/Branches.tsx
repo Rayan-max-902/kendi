@@ -9,21 +9,80 @@ const INITIAL_BRANCHES = [
   {
     id: "ia",
     title: "Développement de l'IA",
-    icon: <Cpu size={40} />,
+    icon: (
+      <svg viewBox="0 0 500 400" className="w-full h-full p-4" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Left 'BTS' serif text */}
+        <text x="40" y="225" fontFamily="Georgia, 'Times New Roman', serif" fontSize="96" fontWeight="900" fill="#0f172a" letterSpacing="2">BTS</text>
+        
+        {/* Right 'DIA' serif text */}
+        <text x="330" y="225" fontFamily="Georgia, 'Times New Roman', serif" fontSize="96" fontWeight="900" fill="#0f172a" letterSpacing="2">DIA</text>
+        
+        {/* Robot / Shield Emblem in Center */}
+        <g transform="translate(195, 110)">
+          {/* Hexagon icon shield outer sleeve */}
+          <rect width="110" height="110" rx="28" fill="#1e293b" />
+          
+          {/* Cyber robot silhouette */}
+          {/* Body/Shoulders */}
+          <path d="M25 90 C25 72, 35 64, 55 64 C75 64, 85 72, 85 90 L85 110 L25 110 Z" fill="#94a3b8" />
+          <path d="M40 70 L48 85 H62 L70 70" stroke="#f1f5f9" strokeWidth="1.5" fill="none" opacity="0.6" />
+          
+          {/* Neck */}
+          <rect x="50" y="52" width="10" height="14" rx="2" fill="#cbd5e1" stroke="#475569" strokeWidth="1" />
+          
+          {/* Cyborg Head */}
+          <rect x="42" y="24" width="26" height="32" rx="12" fill="#e2e8f0" stroke="#475569" strokeWidth="1.5" />
+          
+          {/* Robot eyes (glowing light blue) */}
+          <circle cx="50" cy="36" r="2.5" fill="#38bdf8" />
+          <circle cx="60" cy="36" r="2.5" fill="#38bdf8" />
+          {/* Robot forehead lines */}
+          <path d="M47 30 Q55 28 63 30" stroke="#94a3b8" strokeWidth="1.2" fill="none" />
+          {/* Ears / Side receivers */}
+          <rect x="38" y="32" width="4" height="14" rx="2" fill="#94a3b8" />
+          <rect x="68" y="32" width="4" height="14" rx="2" fill="#94a3b8" />
+
+          {/* Hands holding Glowing brain */}
+          {/* Red glowing brain lobes */}
+          <path d="M48 94 C44 91, 44 85, 49 82 Q55 83 61 82 C66 85, 66 91, 62 94 Z" fill="#f43f5e" opacity="0.85" />
+          <path d="M49 82 C49 76, 52 74, 55 77 C58 74, 61 76, 61 82 Z" fill="#fb7185" opacity="0.9" />
+          {/* Brain sulcus lines glowing white */}
+          <path d="M51 86 Q55 89 59 86" stroke="#fff" strokeWidth="1.2" fill="none" opacity="0.9" />
+          <path d="M52 81 H58" stroke="#fff" strokeWidth="1" fill="none" opacity="0.9" />
+
+          {/* Metallic cyber hands cupping brain */}
+          <path d="M34 100 Q40 88 47 90" stroke="#475569" strokeWidth="3" strokeLinecap="round" fill="none" />
+          <path d="M76 100 Q70 88 63 90" stroke="#475569" strokeWidth="3" strokeLinecap="round" fill="none" />
+        </g>
+        
+        {/* Subtitle text */}
+        <text x="250" y="275" textAnchor="middle" fontFamily="system-ui, sans-serif" fontSize="15" fontWeight="900" fill="#475569" letterSpacing="0.5">ARTIFICIAL INTELLIGENCE DEVELOPMENT TEAM</text>
+      </svg>
+    ),
     color: "bg-sky-500",
     lightColor: "bg-sky-50",
     textColor: "text-sky-600",
     desc: "Cette branche est dédiée à la recherche fondamentale et technique, préparant les experts à concevoir les modèles d'intelligence artificielle de demain.",
     topics: ["Machine Learning", "Vision par Ordinateur", "NLP"],
-    instagram: "https://instagram.com/alkendi_ia",
+    instagram: "https://www.instagram.com/bts__dia?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
     modulesYear1: ["Algèbre Linéaire", "Python Base", "Statistiques"],
     modulesYear2: ["Deep Learning", "TensorFlow", "Projet Fin d'Étude"],
-    studentsCount: 120
+    studentsYear1: 28,
+    studentsYear2: 18,
+    studentsCount: 46
   },
   {
     id: "ai",
     title: "Développement AI",
-    icon: <Code size={40} />,
+    icon: (
+      <svg viewBox="0 0 64 64" className="w-14 h-14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 4L56 18V46L32 60L8 46V18L32 4Z" stroke="currentColor" strokeWidth="3.5" strokeLinejoin="round" />
+        <path d="M22 24L14 32L22 40" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M42 24L50 32L42 40" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M36 20L28 44" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
+        <circle cx="32" cy="32" r="3" fill="currentColor" />
+      </svg>
+    ),
     color: "bg-indigo-500",
     lightColor: "bg-indigo-50",
     textColor: "text-indigo-600",
@@ -32,12 +91,25 @@ const INITIAL_BRANCHES = [
     instagram: "https://instagram.com/alkendi_ai",
     modulesYear1: ["Web Fondamentaux", "JavaScript Expert", "UX Design"],
     modulesYear2: ["NextJS & AI", "Cloud Deployment", "Microservices"],
-    studentsCount: 150
+    studentsYear1: 55,
+    studentsYear2: 47,
+    studentsCount: 102
   },
   {
     id: "cg",
     title: "Comptabilité et Gestion",
-    icon: <PieChart size={40} />,
+    icon: (
+      <svg viewBox="0 0 64 64" className="w-14 h-14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 4L56 18V46L32 60L8 46V18L32 4Z" stroke="currentColor" strokeWidth="3.5" strokeLinejoin="round" />
+        <path d="M20 40V34" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" />
+        <path d="M28 40V28" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" />
+        <path d="M36 40V22" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" />
+        <path d="M44 40V16" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" />
+        <path d="M16 44H48" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
+        <path d="M18 36L26 26L34 30L46 16" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
+        <circle cx="46" cy="16" r="2" fill="currentColor" />
+      </svg>
+    ),
     color: "bg-green-500",
     lightColor: "bg-green-50",
     textColor: "text-green-600",
@@ -46,7 +118,9 @@ const INITIAL_BRANCHES = [
     instagram: "https://instagram.com/alkendi_cg",
     modulesYear1: ["Économie", "Comptabilité 1", "Droit Civil"],
     modulesYear2: ["Audit Financiers", "Management", "Contrôle Gestion"],
-    studentsCount: 95
+    studentsYear1: 58,
+    studentsYear2: 50,
+    studentsCount: 108
   }
 ];
 
@@ -166,9 +240,11 @@ export default function Branches() {
                   <div className="lg:w-1/3 flex flex-col gap-6">
                     <div className={cn(
                       "w-full aspect-square rounded-[2.5rem] flex items-center justify-center shadow-2xl relative z-10 overflow-hidden",
-                      branch.id === "ia" ? "bg-primary text-white" : branch.color + " text-white"
+                      branch.id === "ia" ? "bg-white border-2 border-slate-100" : branch.color + " text-white"
                     )}>
-                      <div className="scale-150">{branch.icon}</div>
+                      <div className={branch.id === "ia" ? "w-full h-full flex items-center justify-center p-0" : "scale-150"}>
+                        {branch.icon}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -187,6 +263,28 @@ export default function Branches() {
                           {getYearLabel(year.id)}
                         </button>
                       ))}
+                    </div>
+
+                    {/* Student headcount details card */}
+                    <div className="bg-white/80 border border-slate-200/60 rounded-3xl p-5 flex flex-col gap-3 text-xs tracking-wider">
+                      <div className="flex items-center gap-2 text-slate-700 font-bold uppercase tracking-widest text-[9px]">
+                        <Users size={14} className="text-primary animate-pulse" />
+                        <span>{language === "ar" ? "إحصائيات المجموعات" : language === "en" ? "Student Breakdown" : "Effectifs Etudiants"}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="bg-slate-50/50 p-2.5 rounded-xl border border-slate-100/80 flex flex-col">
+                          <span className="text-slate-400 text-[8px] font-bold uppercase tracking-widest mb-0.5">{language === "ar" ? "السنة 1" : "1ère Année"}</span>
+                          <span className="text-sm font-display font-black text-slate-900">{branch.studentsYear1}</span>
+                        </div>
+                        <div className="bg-slate-50/50 p-2.5 rounded-xl border border-slate-100/80 flex flex-col">
+                          <span className="text-slate-400 text-[8px] font-bold uppercase tracking-widest mb-0.5">{language === "ar" ? "السنة 2" : "2ème Année"}</span>
+                          <span className="text-sm font-display font-black text-slate-900">{branch.studentsYear2}</span>
+                        </div>
+                      </div>
+                      <div className="pt-2.5 border-t border-slate-100 flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                        <span>Total:</span>
+                        <span className="text-primary font-display font-black text-xs">{branch.studentsCount} {language === "ar" ? "طالب" : "élèves"}</span>
+                      </div>
                     </div>
                   </div>
                   
@@ -278,12 +376,39 @@ export default function Branches() {
                             {language === "ar" ? "الطلاب النشطون" : language === "en" ? "Registered Students" : "Effectif Scolaire"}
                           </h4>
                         </div>
-                        <div className="text-4xl sm:text-6xl font-display font-black leading-none mb-2">
-                          {currentBranch.studentsCount}
+                        <div className="text-4xl sm:text-6xl font-display font-black leading-none mb-2 text-primary">
+                          {selectedYearIndex === 0 ? currentBranch.studentsYear1 : (selectedYearIndex === 1 ? currentBranch.studentsYear2 : currentBranch.studentsCount)}
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40">
-                          {language === "ar" ? "طالب نشط مسجل" : language === "en" ? "Active Students" : "Étudiants Actifs"}
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-6">
+                          {selectedYearIndex !== null 
+                            ? (language === "ar" ? `مسجل في ${getYearLabel(ACADEMIC_YEARS[selectedYearIndex].id)}` : language === "en" ? `Active in ${getYearLabel(ACADEMIC_YEARS[selectedYearIndex].id)}` : `Membres inscrits en ${getYearLabel(ACADEMIC_YEARS[selectedYearIndex].id)}`)
+                            : (language === "ar" ? "طالب نشط مسجل" : language === "en" ? "Active Students" : "Étudiants Actifs")}
                         </span>
+
+                        {/* Breakdown list inside the modal card */}
+                        <div className="border-t border-slate-800/80 pt-6 mt-6 grid grid-cols-2 gap-4 text-xs font-bold text-slate-400">
+                          <div>
+                            <div className="text-[9px] uppercase tracking-wider text-slate-500 mb-1">
+                              {language === "ar" ? "السنة الأولى" : language === "en" ? "1st Year" : "1ère Année"}
+                            </div>
+                            <div className="text-lg text-white font-display font-black">
+                              {currentBranch.studentsYear1} <span className="text-xs font-sans font-medium text-slate-500">{language === "ar" ? "طالب" : "élèves"}</span>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[9px] uppercase tracking-wider text-slate-500 mb-1">
+                              {language === "ar" ? "السنة الثانية" : language === "en" ? "2nd Year" : "2ème Année"}
+                            </div>
+                            <div className="text-lg text-white font-display font-black">
+                              {currentBranch.studentsYear2} <span className="text-xs font-sans font-medium text-slate-500">{language === "ar" ? "طالب" : "élèves"}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-center text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-6 pt-6 border-t border-slate-800/80 flex justify-between">
+                          <span>Total:</span>
+                          <span className="text-primary font-display font-black text-sm">{currentBranch.studentsCount} {language === "ar" ? "طالب نشط" : language === "en" ? "Active students" : "Inscrits au total"}</span>
+                        </div>
                       </div>
 
                       <a 

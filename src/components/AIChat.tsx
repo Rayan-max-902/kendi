@@ -64,17 +64,17 @@ export default function AIChat() {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="mb-6 w-[calc(100vw-2rem)] sm:w-[420px] h-[600px] max-h-[80vh] bg-white rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] flex flex-col overflow-hidden border border-slate-100"
+            className="fixed bottom-24 right-4 left-4 sm:left-auto sm:right-6 sm:w-[420px] h-[500px] sm:h-[600px] max-h-[75vh] sm:max-h-[80vh] bg-white rounded-[2.5rem] sm:rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] flex flex-col overflow-hidden border border-slate-100 z-[101]"
           >
             {/* Header */}
-            <div className="p-8 bg-slate-900 text-white flex justify-between items-center relative overflow-hidden">
+            <div className="p-6 sm:p-8 bg-slate-900 text-white flex justify-between items-center relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
               <div className="flex items-center gap-4 relative z-10">
                 <div className="p-3 bg-primary text-white rounded-2xl shadow-lg shadow-primary/20 animate-pulse">
                   <Bot size={24} />
                 </div>
                 <div>
-                  <h3 className="font-display font-black uppercase tracking-tighter text-lg leading-tight">
+                  <h3 className="font-display font-black uppercase tracking-tighter text-base sm:text-lg leading-tight">
                     {language === "ar" ? "مساعد الكندي الذكي" : language === "en" ? "Al Kendi Assistant" : "Al Kendi Assistant"}
                   </h3>
                   <div className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export default function AIChat() {
               </div>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-xl transition-colors relative z-10"
+                className="p-2 hover:bg-white/10 rounded-xl transition-colors relative z-10 cursor-pointer"
               >
                 <X size={24} />
               </button>
@@ -96,7 +96,7 @@ export default function AIChat() {
             {/* Messages */}
             <div 
               ref={scrollRef}
-              className="flex-1 overflow-y-auto p-8 flex flex-col gap-6 scroll-smooth bg-slate-50/30"
+              className="flex-1 overflow-y-auto p-6 sm:p-8 flex flex-col gap-4 sm:gap-6 scroll-smooth bg-slate-50/30"
             >
               {messages.map((msg) => (
                 <div 
@@ -107,7 +107,7 @@ export default function AIChat() {
                   )}
                 >
                   <div className={cn(
-                    "p-5 rounded-3xl text-sm font-medium leading-relaxed shadow-sm",
+                    "p-4 sm:p-5 rounded-3xl text-xs sm:text-sm font-medium leading-relaxed shadow-sm",
                     msg.role === "user" 
                       ? "bg-primary text-white rounded-tr-none shadow-primary/10" 
                       : "bg-white text-slate-700 rounded-tl-none border border-slate-100"
@@ -123,7 +123,7 @@ export default function AIChat() {
                 </div>
               ))}
               {isTyping && (
-                <div className="self-start flex gap-2 items-center p-5 bg-white border border-slate-100 rounded-3xl rounded-tl-none shadow-sm">
+                <div className="self-start flex gap-2 items-center p-4 sm:p-5 bg-white border border-slate-100 rounded-3xl rounded-tl-none shadow-sm">
                   <div className="w-2 h-2 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
                   <div className="w-2 h-2 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]" />
                   <div className="w-2 h-2 bg-primary/40 rounded-full animate-bounce" />
@@ -132,21 +132,21 @@ export default function AIChat() {
             </div>
 
             {/* Input */}
-            <div className="p-6 bg-white border-t border-slate-50 flex gap-3 items-center">
+            <div className="p-4 sm:p-6 bg-white border-t border-slate-50 flex gap-2 sm:gap-3 items-center">
               <input 
                 type="text" 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
                 placeholder={language === "ar" ? "اكتب رسالتك هنا..." : language === "en" ? "Write your message..." : "Écrivez votre message..."}
-                className="flex-1 bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl px-6 py-4 text-sm font-bold outline-none transition-all placeholder:text-slate-300 font-sans"
+                className="flex-1 bg-slate-50 border-2 border-transparent focus:border-primary rounded-2xl px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-bold outline-none transition-all placeholder:text-slate-300 font-sans min-w-0"
               />
               <button 
                 onClick={handleSend}
                 disabled={!input.trim() || isTyping}
-                className="p-4 bg-primary text-white rounded-2xl hover:bg-primary-hover disabled:opacity-50 transition-all active:scale-95 shadow-xl shadow-primary/20"
+                className="p-3 sm:p-4 bg-primary text-white rounded-2xl hover:bg-primary-hover disabled:opacity-50 transition-all active:scale-95 shadow-xl shadow-primary/20 flex-shrink-0 cursor-pointer"
               >
-                <Send size={24} className={language === "ar" ? "rotate-180" : ""} />
+                <Send size={20} className={cn("sm:w-6 sm:h-6", language === "ar" ? "rotate-180" : "")} />
               </button>
             </div>
           </motion.div>

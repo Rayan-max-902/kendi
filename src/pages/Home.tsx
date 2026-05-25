@@ -1,7 +1,7 @@
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "motion/react";
 import React, { useEffect, useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, UserCheck, ShieldCheck, Cpu, Code, PieChart, Bell, Calendar, Video, Star, Quote, ChevronDown, ChevronUp, Bot, Image as ImageIcon, Play, X } from "lucide-react";
+import { ArrowRight, BookOpen, UserCheck, ShieldCheck, Cpu, Code, PieChart, Bell, Calendar, Video, Star, Quote, ChevronDown, ChevronUp, Bot, Image as ImageIcon, Play, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { collection, query, orderBy, limit, onSnapshot, doc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { cn } from "../lib/utils";
@@ -28,10 +28,58 @@ interface Testimonial {
   createdAt: any;
 }
 
+interface GalleryItem {
+  id: string;
+  imageUrl: string;
+  title: string;
+  titleAr?: string;
+  titleEn?: string;
+  description: string;
+  descriptionAr?: string;
+  descriptionEn?: string;
+  createdAt?: any;
+}
+
+const DEFAULT_GALLERY: GalleryItem[] = [
+  {
+    id: "default-1",
+    imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop",
+    title: "Visite Professionnelle",
+    titleAr: "زيارة مهنية",
+    titleEn: "Professional Visit",
+    description: "Rencontre avec des professionnels et networking dans un cadre corporate",
+    descriptionAr: "لقاءات مع مهنيين وبناء شبكات تواصل في بيئة مؤسساتية",
+    descriptionEn: "Meet professionals and network in a corporate environment"
+  },
+  {
+    id: "default-2",
+    imageUrl: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop",
+    title: "Hackathon & Pitch",
+    titleAr: "هاكاثون وعروض المشاريع",
+    titleEn: "Hackathon & Pitch",
+    description: "Pitcher vos idées innovantes devant un jury d'experts du domaine technologique",
+    descriptionAr: "عرض أفكاركم الابتكارية أمام لجنة تحكيم من خبراء التكنولوجيا",
+    descriptionEn: "Pitch your innovative ideas before a jury of expert judges in tech"
+  },
+  {
+    id: "default-3",
+    imageUrl: "https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2070&auto=format&fit=crop",
+    title: "Ateliers Pratiques",
+    titleAr: "ورشات عمل تطبيقية",
+    titleEn: "Hands-on Workshops",
+    description: "Formations intensives guidées par des professionnels chevronnés de l'informatique",
+    descriptionAr: "حصص تدريبية مكثفة بإشراف مهنيين متمرسين في تكنولوجيا المعلومات",
+    descriptionEn: "Intensive sessions guided by seasoned information technology experts"
+  }
+];
+
 export default function Home() {
   const [recentAnnouncements, setRecentAnnouncements] = useState<RecentAnnouncement[]>([]);
   const [heroSettings, setHeroSettings] = useState<{ videoUrl?: string; imageUrl?: string }>({});
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [currentGalleryIdx, setCurrentGalleryIdx] = useState(0);
+  const [galleryDirection, setGalleryDirection] = useState(0);
   const [newOpinion, setNewOpinion] = useState({ name: "", rating: 5, comment: "" });
   const [submittingOpinion, setSubmittingOpinion] = useState(false);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
@@ -63,10 +111,19 @@ export default function Home() {
       console.error("Error fetching testimonials:", error);
     });
 
+    // Gallery Slider Images
+    const qg = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
+    const unsubGallery = onSnapshot(qg, (snapshot) => {
+      setGalleryItems(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GalleryItem)));
+    }, (error) => {
+      console.error("Error fetching gallery:", error);
+    });
+
     return () => {
       unsubAnn();
       unsubHero();
       unsubTest();
+      unsubGallery();
     };
   }, []);
 
@@ -312,37 +369,104 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div className="relative">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  <motion.div 
-                    whileHover={{ scale: 0.98 }}
-                    className="aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl"
-                  >
-                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop" alt="" className="w-full h-full object-cover" />
-                  </motion.div>
-                  <motion.div 
-                    whileHover={{ scale: 0.98 }}
-                    className="aspect-square rounded-3xl overflow-hidden shadow-xl"
-                  >
-                    <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop" alt="" className="w-full h-full object-cover" />
-                  </motion.div>
-                </div>
-                <div className="pt-12 space-y-4">
-                  <motion.div 
-                    whileHover={{ scale: 0.98 }}
-                    className="aspect-square rounded-3xl overflow-hidden shadow-xl"
-                  >
-                    <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop" alt="" className="w-full h-full object-cover" />
-                  </motion.div>
-                  <motion.div 
-                    whileHover={{ scale: 0.98 }}
-                    className="aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl"
-                  >
-                    <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2070&auto=format&fit=crop" alt="" className="w-full h-full object-cover" />
-                  </motion.div>
-                </div>
+              {/* Sliding Gallery replaces the collage */}
+              <div className="relative group overflow-hidden w-full h-[450px] sm:h-[500px] rounded-[2.5rem] shadow-2xl border border-slate-100 bg-slate-900">
+                {(() => {
+                  const items = galleryItems.length > 0 ? galleryItems : DEFAULT_GALLERY;
+                  
+                  const handlePrev = (e: React.MouseEvent) => {
+                    e.preventDefault();
+                    setGalleryDirection(-1);
+                    setCurrentGalleryIdx((prev) => (prev - 1 + items.length) % items.length);
+                  };
+
+                  const handleNext = (e: React.MouseEvent) => {
+                    e.preventDefault();
+                    setGalleryDirection(1);
+                    setCurrentGalleryIdx((prev) => (prev + 1) % items.length);
+                  };
+
+                  if (items.length === 0) return null;
+                  
+                  // Double check index bounds
+                  const index = currentGalleryIdx >= items.length ? 0 : currentGalleryIdx;
+                  const currentItem = items[index];
+
+                  const title = language === "ar" 
+                    ? (currentItem.titleAr || currentItem.title) 
+                    : (language === "en" ? (currentItem.titleEn || currentItem.title) : currentItem.title);
+                  
+                  const description = language === "ar" 
+                    ? (currentItem.descriptionAr || currentItem.description) 
+                    : (language === "en" ? (currentItem.descriptionEn || currentItem.description) : currentItem.description);
+
+                  return (
+                    <div className="absolute inset-0 w-full h-full">
+                      <AnimatePresence initial={false} mode="popLayout">
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, x: galleryDirection * 200 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -galleryDirection * 200 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 28 }}
+                          className="absolute inset-0 w-full h-full"
+                        >
+                          <img 
+                            src={currentItem.imageUrl} 
+                            alt={title} 
+                            className="w-full h-full object-cover select-none"
+                            referrerPolicy="no-referrer"
+                          />
+                        </motion.div>
+                      </AnimatePresence>
+
+                      {/* Cover/Gradient overlay for high-contrast reading */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent pointer-events-none" />
+
+                      {/* Text content */}
+                      <div className="absolute bottom-10 left-8 right-8 text-white z-10 text-left">
+                        <h3 className="text-xl sm:text-2xl font-display font-black flex items-center gap-3 drop-shadow-md tracking-tight">
+                          {title}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-slate-200 mt-2 font-medium drop-shadow-md leading-relaxed">
+                          {description}
+                        </p>
+                      </div>
+
+                      {/* Navigation arrows */}
+                      <button
+                        onClick={handlePrev}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 hover:bg-white text-slate-950 flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95 z-20 cursor-pointer"
+                        aria-label="Previous slide"
+                      >
+                        <ChevronLeft size={20} className={language === "ar" ? "rotate-180" : ""} />
+                      </button>
+                      <button
+                        onClick={handleNext}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 hover:bg-white text-slate-950 flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95 z-20 cursor-pointer"
+                        aria-label="Next slide"
+                      >
+                        <ChevronRight size={20} className={language === "ar" ? "rotate-180" : ""} />
+                      </button>
+
+                      {/* Pagination dots */}
+                      <div className={`absolute bottom-4 ${language === "ar" ? "left-8" : "right-8"} flex gap-1.5 z-20`}>
+                        {items.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              setGalleryDirection(idx > index ? 1 : -1);
+                              setCurrentGalleryIdx(idx);
+                            }}
+                            className={`h-1.5 rounded-full transition-all ${idx === index ? 'w-6 bg-primary' : 'w-1.5 bg-white/50 hover:bg-white'}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
-              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
             </div>
             
             <div className="space-y-10">

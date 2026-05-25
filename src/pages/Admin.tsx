@@ -8,11 +8,12 @@ import {
   onSnapshot, 
   query, 
   orderBy, 
-  serverTimestamp 
+  serverTimestamp,
+  updateDoc
 } from "firebase/firestore";
 import { useAuth } from "../lib/AuthContext";
 import { Navigate } from "react-router-dom";
-import { Plus, Trash2, Image as ImageIcon, Link as LinkIcon, Building2, Megaphone, MessageSquare, GraduationCap, Lock } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon, Link as LinkIcon, Building2, Megaphone, MessageSquare, GraduationCap, Lock, PenLine, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 // Admin UIDs and emails (same as firestore.rules)
@@ -21,12 +22,13 @@ const ADMIN_UIDS = ["448tPJFMzCX1Tiz6mWo1h4Y3ImZ2"];
 
 export default function Admin() {
   const { user, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState<"announcements" | "partners" | "testimonials" | "community" | "config">("announcements");
+  const [activeTab, setActiveTab] = useState<"announcements" | "partners" | "testimonials" | "community" | "config" | "gallery">("announcements");
   const [deleteWarning, setDeleteWarning] = useState<string | null>(null);
   
   const [partners, setPartners] = useState<any[]>([]);
   const [newPartner, setNewPartner] = useState({ name: "", logoUrl: "", websiteUrl: "" });
   const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [editingAnnouncementId, setEditingAnnouncementId] = useState<string | null>(null);
   const [newAnnouncement, setNewAnnouncement] = useState({ 
     title: "", 
     content: "", 
@@ -39,6 +41,17 @@ export default function Admin() {
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [communityDocs, setCommunityDocs] = useState<any[]>([]);
+  const [gallery, setGallery] = useState<any[]>([]);
+  const [newGalleryItem, setNewGalleryItem] = useState({
+    title: "",
+    titleAr: "",
+    titleEn: "",
+    description: "",
+    descriptionAr: "",
+    descriptionEn: "",
+    imageUrl: ""
+  });
+  const [addingGallery, setAddingGallery] = useState(false);
   const [heroSettings, setHeroSettings] = useState({ videoUrl: "", imageUrl: "" });
   const [appConfig, setAppConfig] = useState({ logoUrl: "", associationName: "Al Kendi" });
   const [updatingConfig, setUpdatingConfig] = useState(false);
@@ -73,6 +86,11 @@ export default function Admin() {
       setCommunityDocs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
 
+    const qGallery = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
+    const unsubscribeGallery = onSnapshot(qGallery, (snapshot) => {
+      setGallery(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+
     const unsubHero = onSnapshot(doc(db, "settings", "hero"), (docSnap) => {
       if (docSnap.exists()) {
         setHeroSettings(docSnap.data() as any);
@@ -91,6 +109,7 @@ export default function Admin() {
       unsubscribeTestimonials();
       unsubscribeCourses();
       unsubscribeDocs();
+      unsubscribeGallery();
       unsubHero();
       unsubConfig();
     };
@@ -146,14 +165,112 @@ export default function Admin() {
     }
   };
 
+  const handleGalleryImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1024 * 1024) {
+        alert("L'image est trop lourde (max 1Mo)");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewGalleryItem(prev => ({ ...prev, imageUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddGalleryItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGalleryItem.imageUrl) {
+      alert("Veuillez sélectionner une image pour la galerie !");
+      return;
+    }
+    if (!newGalleryItem.title || !newGalleryItem.description) {
+      alert("Veuillez remplir au moins le titre et la description en Français !");
+      return;
+    }
+    setAddingGallery(true);
+    try {
+      await addDoc(collection(db, "gallery"), {
+        ...newGalleryItem,
+        createdAt: serverTimestamp()
+      });
+      setNewGalleryItem({
+        title: "",
+        titleAr: "",
+        titleEn: "",
+        description: "",
+        descriptionAr: "",
+        descriptionEn: "",
+        imageUrl: ""
+      });
+      alert("Image de galerie ajoutée avec succès !");
+    } catch (error) {
+      console.error("Error adding gallery item:", error);
+      alert("Erreur lors de l'ajout.");
+    } finally {
+      setAddingGallery(false);
+    }
+  };
+
+  const handleDeleteGalleryItem = async (id: string) => {
+    if (window.confirm("Voulez-vous vraiment supprimer cette image de la galerie ? Cette action est irréversible.")) {
+      try {
+        await deleteDoc(doc(db, "gallery", id));
+      } catch (error) {
+        console.error("Error deleting gallery item:", error);
+        alert("Erreur lors de la suppression.");
+      }
+    }
+  };
+
+  const handleStartEdit = (announcement: any) => {
+    setEditingAnnouncementId(announcement.id);
+    setNewAnnouncement({
+      title: announcement.title || "",
+      content: announcement.content || "",
+      category: announcement.category || "Nouveauté",
+      images: announcement.images || [],
+      videos: announcement.videos || [],
+      author: announcement.author || "",
+      manualDate: announcement.manualDate || (announcement.date ? announcement.date.slice(0, 16) : "")
+    });
+    // Scroll to form smoothly
+    window.scrollTo({ top: 300, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAnnouncementId(null);
+    setNewAnnouncement({ 
+      title: "", 
+      content: "", 
+      category: "Nouveauté", 
+      images: [], 
+      videos: [], 
+      author: "",
+      manualDate: "" 
+    });
+  };
+
   const handleAddAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, "announcements"), {
-        ...newAnnouncement,
-        date: newAnnouncement.manualDate || new Date().toISOString(),
-        createdAt: serverTimestamp()
-      });
+      if (editingAnnouncementId) {
+        await updateDoc(doc(db, "announcements", editingAnnouncementId), {
+          ...newAnnouncement,
+          date: newAnnouncement.manualDate || new Date().toISOString()
+        });
+        setEditingAnnouncementId(null);
+        alert("Annonce modifiée avec succès !");
+      } else {
+        await addDoc(collection(db, "announcements"), {
+          ...newAnnouncement,
+          date: newAnnouncement.manualDate || new Date().toISOString(),
+          createdAt: serverTimestamp()
+        });
+        alert("Annonce publiée avec succès !");
+      }
       setNewAnnouncement({ 
         title: "", 
         content: "", 
@@ -164,7 +281,8 @@ export default function Admin() {
         manualDate: "" 
       });
     } catch (error) {
-      console.error("Error adding announcement:", error);
+      console.error("Error saving announcement:", error);
+      alert("Erreur lors de la sauvegarde de l'annonce.");
     }
   };
 
@@ -309,8 +427,15 @@ export default function Admin() {
               onClick={() => setActiveTab("config")}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeTab === "config" ? "bg-primary text-white shadow-lg" : "text-slate-400 hover:text-slate-600"}`}
             >
-              <ImageIcon size={14} />
+              <Lock size={14} />
               Configuration
+            </button>
+            <button 
+              onClick={() => setActiveTab("gallery")}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeTab === "gallery" ? "bg-primary text-white shadow-lg" : "text-slate-400 hover:text-slate-600"}`}
+            >
+              <ImageIcon size={14} />
+              Galerie Home
             </button>
           </div>
         </header>
@@ -414,9 +539,21 @@ export default function Admin() {
                 return (
                   <div className="grid lg:grid-cols-[400px_1fr] gap-10">
                     <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 h-fit">
-                      <h2 className="text-xl font-display font-black mb-8 uppercase tracking-tight flex items-center gap-3">
-                        <Plus className="text-primary" />
-                        Nouvelle Annonce
+                      <h2 className="text-xl font-display font-black mb-8 uppercase tracking-tight flex items-center justify-between gap-3 text-slate-900">
+                        <div className="flex items-center gap-2">
+                          {editingAnnouncementId ? <PenLine className="text-primary" size={20} /> : <Plus className="text-primary" size={20} />}
+                          <span>{editingAnnouncementId ? "Modifier l'Annonce" : "Nouvelle Annonce"}</span>
+                        </div>
+                        {editingAnnouncementId && (
+                          <button 
+                            type="button" 
+                            onClick={handleCancelEdit}
+                            className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400 hover:text-slate-600 cursor-pointer"
+                            title="Annuler l'édition"
+                          >
+                            <X size={16} />
+                          </button>
+                        )}
                       </h2>
                       <form onSubmit={handleAddAnnouncement} className="space-y-6">
                         <div className="space-y-2">
@@ -515,12 +652,23 @@ export default function Admin() {
                             placeholder="Nom du réalisateur..."
                           />
                         </div>
-                        <button 
-                          type="submit" 
-                          className="w-full py-5 bg-primary hover:bg-primary-hover text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl shadow-primary/20"
-                        >
-                          Publier l'Annonce
-                        </button>
+                        <div className="flex flex-col gap-2">
+                          <button 
+                            type="submit" 
+                            className="w-full py-5 bg-primary hover:bg-primary-hover text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl shadow-primary/20 cursor-pointer"
+                          >
+                            {editingAnnouncementId ? "Enregistrer les modifications" : "Publier l'Annonce"}
+                          </button>
+                          {editingAnnouncementId && (
+                            <button 
+                              type="button"
+                              onClick={handleCancelEdit}
+                              className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-black uppercase tracking-widest transition-all text-xs cursor-pointer"
+                            >
+                              Annuler l'édition
+                            </button>
+                          )}
+                        </div>
                       </form>
                     </div>
 
@@ -536,8 +684,14 @@ export default function Admin() {
                             className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between group"
                           >
                             <div className="flex items-center gap-6">
-                              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${item.category === 'Urgent' ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-400'}`}>
-                                <Megaphone size={24} />
+                              <div className="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center bg-slate-50 flex-shrink-0">
+                                {item.images && item.images.length > 0 ? (
+                                  <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                ) : (
+                                  <div className={`w-full h-full flex items-center justify-center ${item.category === 'Urgent' ? 'bg-red-50 text-red-500' : 'text-slate-400'}`}>
+                                    <Megaphone size={24} />
+                                  </div>
+                                )}
                               </div>
                               <div>
                                 <div className="flex items-center gap-3 mb-1">
@@ -559,16 +713,25 @@ export default function Admin() {
                                 </h3>
                               </div>
                             </div>
-                            <button 
-                              onClick={() => {
-                                console.log("Deleting announcement with ID:", item.id);
-                                handleDeleteAnnouncement(item.id);
-                              }}
-                              className="p-4 bg-red-50 text-red-600 rounded-2xl transition-all hover:bg-red-600 hover:text-white shadow-md active:scale-90 border-2 border-red-100 flex items-center justify-center group/del"
-                              title="Supprimer Définitivement"
-                            >
-                              <Trash2 size={20} className="group-hover/del:animate-bounce" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button 
+                                onClick={() => handleStartEdit(item)}
+                                className="p-4 bg-blue-50 text-blue-600 rounded-2xl transition-all hover:bg-blue-600 hover:text-white shadow-md active:scale-90 border-2 border-blue-100 flex items-center justify-center cursor-pointer"
+                                title="Modifier l'Annonce"
+                              >
+                                <PenLine size={20} />
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  console.log("Deleting announcement with ID:", item.id);
+                                  handleDeleteAnnouncement(item.id);
+                                }}
+                                className="p-4 bg-red-50 text-red-600 rounded-2xl transition-all hover:bg-red-600 hover:text-white shadow-md active:scale-90 border-2 border-red-100 flex items-center justify-center group/del cursor-pointer"
+                                title="Supprimer Définitivement"
+                              >
+                                <Trash2 size={20} className="group-hover/del:animate-bounce" />
+                              </button>
+                            </div>
                           </motion.div>
                         ))}
                       </AnimatePresence>
@@ -696,6 +859,183 @@ export default function Admin() {
                         )}
                       </div>
                     </section>
+                  </div>
+                );
+              case "gallery":
+                return (
+                  <div className="grid lg:grid-cols-[400px_1fr] gap-10 animate-fade-in">
+                    <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 h-fit">
+                      <h2 className="text-xl font-display font-black mb-8 uppercase tracking-tight flex items-center gap-3 text-slate-900">
+                        <Plus className="text-primary" />
+                        Nouvelle Image de Galerie
+                      </h2>
+                      <form onSubmit={handleAddGalleryItem} className="space-y-6">
+                        {/* Image selector */}
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Photo de la Galerie</label>
+                          <div className="relative group/gallery-upload">
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={handleGalleryImageFile} 
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                            />
+                            <div className={`w-full h-40 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-2 overflow-hidden ${newGalleryItem.imageUrl ? 'border-primary bg-primary/5' : 'border-slate-200 bg-slate-50 group-hover/gallery-upload:border-primary group-hover/gallery-upload:bg-white'}`}>
+                              {newGalleryItem.imageUrl ? (
+                                <img src={newGalleryItem.imageUrl} alt="Preview" className="w-[95%] h-[95%] object-cover rounded-xl" />
+                              ) : (
+                                <>
+                                  <ImageIcon className="text-slate-300 group-hover/gallery-upload:text-primary transition-colors" size={36} />
+                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sélectionner Image (max 1Mo)</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Title & Description FR */}
+                        <div className="space-y-4 pt-4 border-t border-slate-100">
+                          <span className="inline-flex px-2 py-0.5 rounded bg-blue-50 text-blue-500 font-bold text-[8px] uppercase tracking-wider">Français (Défaut)</span>
+                          <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Titre (FR)</label>
+                            <input 
+                              type="text" 
+                              required
+                              value={newGalleryItem.title}
+                              onChange={(e) => setNewGalleryItem(prev => ({ ...prev, title: e.target.value }))}
+                              className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-primary focus:bg-white outline-none transition-all font-bold text-xs"
+                              placeholder="Ex: Visite Professionnelle"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Description (FR)</label>
+                            <textarea 
+                              required
+                              rows={2}
+                              value={newGalleryItem.description}
+                              onChange={(e) => setNewGalleryItem(prev => ({ ...prev, description: e.target.value }))}
+                              className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-primary focus:bg-white outline-none transition-all font-bold text-xs"
+                              placeholder="Brève description..."
+                            />
+                          </div>
+                        </div>
+
+                        {/* Title & Description EN */}
+                        <div className="space-y-4 pt-4 border-t border-slate-100">
+                          <span className="inline-flex px-2 py-0.5 rounded bg-purple-50 text-purple-500 font-bold text-[8px] uppercase tracking-wider">English</span>
+                          <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Title (EN)</label>
+                            <input 
+                              type="text" 
+                              value={newGalleryItem.titleEn}
+                              onChange={(e) => setNewGalleryItem(prev => ({ ...prev, titleEn: e.target.value }))}
+                              className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-primary focus:bg-white outline-none transition-all font-bold text-xs"
+                              placeholder="Ex: Professional Visit"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Description (EN)</label>
+                            <textarea 
+                              rows={2}
+                              value={newGalleryItem.descriptionEn}
+                              onChange={(e) => setNewGalleryItem(prev => ({ ...prev, descriptionEn: e.target.value }))}
+                              className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-primary focus:bg-white outline-none transition-all font-bold text-xs"
+                              placeholder="Short description..."
+                            />
+                          </div>
+                        </div>
+
+                        {/* Title & Description AR */}
+                        <div className="space-y-4 pt-4 border-t border-slate-100">
+                          <div className="flex">
+                            <span className="inline-flex px-2 py-0.5 rounded bg-emerald-50 text-emerald-500 font-bold text-[8px] uppercase tracking-wider">العربية</span>
+                          </div>
+                          <div className="space-y-2 text-right">
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-1 block text-right">العنوان (AR)</label>
+                            <input 
+                              type="text" 
+                              dir="rtl"
+                              value={newGalleryItem.titleAr}
+                              onChange={(e) => setNewGalleryItem(prev => ({ ...prev, titleAr: e.target.value }))}
+                              className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-primary focus:bg-white outline-none transition-all font-bold text-xs text-right"
+                              placeholder="مثال: زيارة مهنية"
+                            />
+                          </div>
+                          <div className="space-y-2 text-right">
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-1 block text-right">الوصف (AR)</label>
+                            <textarea 
+                              rows={2}
+                              dir="rtl"
+                              value={newGalleryItem.descriptionAr}
+                              onChange={(e) => setNewGalleryItem(prev => ({ ...prev, descriptionAr: e.target.value }))}
+                              className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-primary focus:bg-white outline-none transition-all font-bold text-xs text-right"
+                              placeholder="وصف مختصر..."
+                            />
+                          </div>
+                        </div>
+
+                        <button 
+                          type="submit" 
+                          disabled={addingGallery}
+                          className="w-full py-4 bg-primary hover:bg-primary-hover text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl shadow-primary/20 disabled:opacity-50 cursor-pointer"
+                        >
+                          {addingGallery ? "Ajout..." : "Créer l'image"}
+                        </button>
+                      </form>
+                    </div>
+
+                    {/* Current gallery view */}
+                    <div className="space-y-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">Images Actuelles (Total: {gallery.length})</h3>
+                      </div>
+                      <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <AnimatePresence mode="popLayout">
+                          {gallery.map((item) => (
+                            <motion.div 
+                              key={item.id}
+                              layout
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.9 }}
+                              className="bg-white rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden flex flex-col group hover:shadow-lg transition-all"
+                            >
+                              <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
+                                <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                                <button 
+                                  onClick={() => handleDeleteGalleryItem(item.id)}
+                                  className="absolute top-3 right-3 p-2 bg-red-50 hover:bg-red-500 hover:text-white text-red-500 rounded-xl transition-all shadow-md z-10 cursor-pointer"
+                                  title="Supprimer"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                              <div className="p-5 flex-1 flex flex-col gap-3 text-left">
+                                <div>
+                                  <span className="text-[8px] font-bold text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded uppercase tracking-wider">FR</span>
+                                  <h4 className="font-display font-black uppercase tracking-tight text-slate-900 text-sm mt-1">{item.title}</h4>
+                                  <p className="text-[10px] text-slate-500 mt-1 line-clamp-2">{item.description}</p>
+                                </div>
+                                {item.titleAr && (
+                                  <div className="border-t border-slate-100 pt-3 text-right">
+                                    <span className="text-[8px] font-bold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded uppercase tracking-wider">AR</span>
+                                    <h4 className="font-display font-bold tracking-tight text-slate-900 text-sm mt-1">{item.titleAr}</h4>
+                                    <p className="text-[10px] text-slate-500 mt-1 line-clamp-2">{item.descriptionAr}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
+                        {gallery.length === 0 && (
+                          <div className="col-span-full py-20 text-center border-2 border-dashed border-slate-200 rounded-[3rem]">
+                            <ImageIcon className="mx-auto text-slate-200 mb-4 animate-bounce" size={48} />
+                            <p className="font-bold text-slate-400">Aucune photo personnalisée dans la galerie</p>
+                            <p className="text-xs text-slate-400 mt-1">Les 3 photos d'illustration par défaut de la page d'accueil seront affichées.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 );
               case "config":
